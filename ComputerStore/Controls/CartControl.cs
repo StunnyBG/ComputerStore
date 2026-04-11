@@ -82,6 +82,24 @@ namespace ComputerStore
             }
             else
             {
+                if (delta > 0)
+                {
+                    try
+                    {
+                        using var ctx = DbContextFactory.Create();
+                        var part = ctx.PcParts.Find(_selectedPartId);
+                        if (part is not null && newQty > part.Stock)
+                        {
+                            MessageBox.Show(
+                                $"Cannot add more '{item.Name}'.\nOnly {part.Stock} unit(s) available in stock.",
+                                "Insufficient Stock",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Warning);
+                            return;
+                        }
+                    }
+                    catch { }
+                }
                 item.Quantity = newQty;
             }
             RefreshGrid();
