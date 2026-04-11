@@ -14,7 +14,7 @@ public class OrderItem
     public int Quantity { get; set; }
 
     [Required]
-    [Column(TypeName = UnitPricePrecision)]
+    [Column(TypeName = UnitPriceColumnType)]
     public decimal UnitPrice { get; set; } 
 
     [Required]

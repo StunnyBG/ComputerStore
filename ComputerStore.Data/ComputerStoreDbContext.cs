@@ -20,9 +20,7 @@ namespace ComputerStore.Data
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer(ConnectionString);
-            }
+                optionsBuilder.UseSqlite(ConnectionString);
 
             base.OnConfiguring(optionsBuilder);
         }
@@ -31,7 +29,6 @@ namespace ComputerStore.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Store enums as strings so the DB is human-readable
             modelBuilder.Entity<User>()
                 .Property(u => u.Role)
                 .HasConversion<string>();
@@ -40,20 +37,16 @@ namespace ComputerStore.Data
                 .Property(o => o.Status)
                 .HasConversion<string>();
 
-            // Unique constraints
             modelBuilder.Entity<User>()
-                .HasIndex(u => u.Username)
-                .IsUnique();
+                .HasIndex(u => u.Username).IsUnique();
 
             modelBuilder.Entity<User>()
-                .HasIndex(u => u.Email)
-                .IsUnique();
+                .HasIndex(u => u.Email).IsUnique();
 
             modelBuilder.Entity<Manufacturer>()
-                .HasIndex(m => m.Name)
-                .IsUnique();
+                .HasIndex(m => m.Name).IsUnique();
 
-            // ── Seed data ──────────────────────────────────────────────
+            // Seed data
 
             modelBuilder.Entity<Category>().HasData(
                 new Category { Id = 1, Name = "CPU", Description = "Central Processing Units" },
@@ -86,33 +79,25 @@ namespace ComputerStore.Data
             var seedDate = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
             modelBuilder.Entity<PcPart>().HasData(
-                // CPUs
                 new PcPart { Id = 1, Name = "Intel Core i9-14900K", CategoryId = 1, ManufacturerId = 1, Price = 589.99m, Stock = 15, CreatedAt = seedDate },
                 new PcPart { Id = 2, Name = "Intel Core i5-14600K", CategoryId = 1, ManufacturerId = 1, Price = 299.99m, Stock = 30, CreatedAt = seedDate },
                 new PcPart { Id = 3, Name = "AMD Ryzen 9 7950X", CategoryId = 1, ManufacturerId = 2, Price = 549.99m, Stock = 12, CreatedAt = seedDate },
                 new PcPart { Id = 4, Name = "AMD Ryzen 5 7600X", CategoryId = 1, ManufacturerId = 2, Price = 229.99m, Stock = 40, CreatedAt = seedDate },
-                // GPUs
                 new PcPart { Id = 5, Name = "NVIDIA GeForce RTX 4090", CategoryId = 2, ManufacturerId = 3, Price = 1599.99m, Stock = 8, CreatedAt = seedDate },
                 new PcPart { Id = 6, Name = "NVIDIA GeForce RTX 4070", CategoryId = 2, ManufacturerId = 3, Price = 599.99m, Stock = 20, CreatedAt = seedDate },
                 new PcPart { Id = 7, Name = "AMD Radeon RX 7900 XTX", CategoryId = 2, ManufacturerId = 2, Price = 999.99m, Stock = 10, CreatedAt = seedDate },
                 new PcPart { Id = 8, Name = "AMD Radeon RX 7600", CategoryId = 2, ManufacturerId = 2, Price = 269.99m, Stock = 25, CreatedAt = seedDate },
-                // RAM
                 new PcPart { Id = 9, Name = "Corsair Vengeance 32GB DDR5-6000", CategoryId = 3, ManufacturerId = 4, Price = 139.99m, Stock = 50, CreatedAt = seedDate },
                 new PcPart { Id = 10, Name = "G.Skill Trident Z5 16GB DDR5-5600", CategoryId = 3, ManufacturerId = 5, Price = 79.99m, Stock = 60, CreatedAt = seedDate },
-                // Storage
                 new PcPart { Id = 11, Name = "Samsung 990 Pro 1TB NVMe", CategoryId = 4, ManufacturerId = 6, Price = 109.99m, Stock = 45, CreatedAt = seedDate },
                 new PcPart { Id = 12, Name = "WD Black SN850X 2TB NVMe", CategoryId = 4, ManufacturerId = 7, Price = 179.99m, Stock = 30, CreatedAt = seedDate },
                 new PcPart { Id = 13, Name = "Seagate Barracuda 4TB HDD", CategoryId = 4, ManufacturerId = 8, Price = 74.99m, Stock = 35, CreatedAt = seedDate },
-                // Motherboards
                 new PcPart { Id = 14, Name = "ASUS ROG Maximus Z790 Hero", CategoryId = 5, ManufacturerId = 9, Price = 599.99m, Stock = 10, CreatedAt = seedDate },
                 new PcPart { Id = 15, Name = "MSI MAG B650 TOMAHAWK WIFI", CategoryId = 5, ManufacturerId = 10, Price = 229.99m, Stock = 22, CreatedAt = seedDate },
-                // PSUs
                 new PcPart { Id = 16, Name = "Corsair RM1000x 1000W 80+ Gold", CategoryId = 6, ManufacturerId = 4, Price = 189.99m, Stock = 20, CreatedAt = seedDate },
                 new PcPart { Id = 17, Name = "be quiet! Straight Power 850W", CategoryId = 6, ManufacturerId = 11, Price = 149.99m, Stock = 25, CreatedAt = seedDate },
-                // Cases
                 new PcPart { Id = 18, Name = "Fractal Design Torrent", CategoryId = 7, ManufacturerId = 12, Price = 179.99m, Stock = 15, CreatedAt = seedDate },
                 new PcPart { Id = 19, Name = "NZXT H510 Flow", CategoryId = 7, ManufacturerId = 13, Price = 99.99m, Stock = 20, CreatedAt = seedDate },
-                // Cooling
                 new PcPart { Id = 20, Name = "Noctua NH-D15", CategoryId = 8, ManufacturerId = 14, Price = 99.99m, Stock = 30, CreatedAt = seedDate },
                 new PcPart { Id = 21, Name = "Corsair H150i Elite LCD", CategoryId = 8, ManufacturerId = 4, Price = 259.99m, Stock = 18, CreatedAt = seedDate }
             );
@@ -133,5 +118,4 @@ namespace ComputerStore.Data
                 System.Security.Cryptography.SHA256.HashData(
                     System.Text.Encoding.UTF8.GetBytes(password)));
     }
-
 }

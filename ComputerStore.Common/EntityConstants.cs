@@ -37,12 +37,12 @@ namespace ComputerStore.Common
 
         public static class Order
         {
-            public const string TotalPricePrecision = "decimal(18,2)";
+            public const string TotalPriceColumnType = "decimal(18,2)";
         }
 
         public static class OrderItem
         {
-            public const string UnitPricePrecision = "decimal(18,2)";
+            public const string UnitPriceColumnType = "decimal(18,2)";
             public const int MinQuantity = 1;
             public const int MaxQuantity = 999;
         }

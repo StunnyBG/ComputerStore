@@ -9,7 +9,7 @@ namespace ComputerStore
         public static ComputerStoreDbContext Create()
         {
             var opts = new DbContextOptionsBuilder<ComputerStoreDbContext>()
-                           .UseSqlServer(ConnectionString)
+                           .UseSqlite(ConnectionString)
                            .Options;
             return new ComputerStoreDbContext(opts);
         }

@@ -1,5 +1,4 @@
-﻿
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using static ComputerStore.Common.ApplicationConstants;
 
@@ -10,9 +9,7 @@ namespace ComputerStore.Data
         public ComputerStoreDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<ComputerStoreDbContext>();
-
-            optionsBuilder.UseSqlServer(ConnectionString);
-
+            optionsBuilder.UseSqlite(ConnectionString);
             return new ComputerStoreDbContext(optionsBuilder.Options);
         }
     }

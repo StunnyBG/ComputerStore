@@ -17,7 +17,7 @@ namespace ComputerStore.Data.Models
         public OrderStatus Status { get; set; } = OrderStatus.Pending;
 
         [Required]
-        [Column(TypeName = TotalPricePrecision)]
+        [Column(TypeName = TotalPriceColumnType)]
         public decimal TotalPrice { get; set; }
 
         [Required]
