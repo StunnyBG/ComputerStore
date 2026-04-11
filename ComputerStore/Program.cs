@@ -1,17 +1,25 @@
+using System.Globalization;
+
 namespace ComputerStore
 {
     internal static class Program
     {
-        /// <summary>
-        ///  The main entry point for the application.
-        /// </summary>
         [STAThread]
         static void Main()
         {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
+            // Force en-US culture for consistent decimal/date formatting
+            Thread.CurrentThread.CurrentCulture   = new CultureInfo("en-US");
+            Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
+
             ApplicationConfiguration.Initialize();
-            Application.Run(new Form1());
+
+            // Show login; only open the main shell on success
+            using var login = new LoginForm();
+            if (login.ShowDialog() == DialogResult.OK && login.LoggedInUser is not null)
+            {
+                Session.Login(login.LoggedInUser);
+                Application.Run(new MainForm());
+            }
         }
     }
 }
