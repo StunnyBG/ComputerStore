@@ -72,6 +72,9 @@ namespace ComputerStore
 
             // ── Grid ─────────────────────────────────────────────────
             grid = UIFactory.StyledGrid();
+            // Save the selected row ID while the grid still has focus,
+            // because clicking a button moves focus away and nulls CurrentRow.
+            grid.SelectionChanged += Grid_SelectionChanged;
 
             // ── Bottom action bar ────────────────────────────────────
             pnlBottom = new Panel
@@ -79,31 +82,41 @@ namespace ComputerStore
                 Dock      = DockStyle.Bottom,
                 Height    = 50,
                 BackColor = AppColors.SurfaceWhite,
-                Padding   = new Padding(12, 8, 12, 8),
             };
 
             lblStatus = new Label
             {
-                Text      = string.Empty,
-                Font      = new Font("Segoe UI", 9f),
+                Text     = string.Empty,
+                Font     = new Font("Segoe UI", 9f),
                 ForeColor = AppColors.TextDark,
-                AutoSize  = true,
-                Location  = new Point(12, 15),
+                AutoSize = true,
+                Anchor   = AnchorStyles.Left | AnchorStyles.Top,
+                Location = new Point(12, 15),
             };
 
-            btnDetails          = UIFactory.SecondaryButton("ℹ️ Details", 110, 34);
-            btnDetails.Anchor   = AnchorStyles.Top | AnchorStyles.Right;
-            btnDetails.Location = new Point(598, 8);
-            btnDetails.Click   += BtnDetails_Click;
+            // Right-side button panel — docks to the right edge so the
+            // buttons are always visible regardless of window width.
+            pnlButtonsRight = new FlowLayoutPanel
+            {
+                Dock          = DockStyle.Right,
+                AutoSize      = true,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents  = false,
+                BackColor     = AppColors.SurfaceWhite,
+                Padding       = new Padding(0, 8, 8, 8),
+            };
 
-            btnAddCart          = UIFactory.PrimaryButton("🛒 Add to Cart", 140, 34);
-            btnAddCart.Anchor   = AnchorStyles.Top | AnchorStyles.Right;
-            btnAddCart.Location = new Point(718, 8);
-            btnAddCart.Click   += BtnAddCart_Click;
+            btnDetails        = UIFactory.SecondaryButton("ℹ️ Details", 110, 34);
+            btnDetails.Click += BtnDetails_Click;
+
+            btnAddCart        = UIFactory.PrimaryButton("🛒 Add to Cart", 140, 34);
+            btnAddCart.Click += BtnAddCart_Click;
+
+            pnlButtonsRight.Controls.Add(btnDetails);
+            pnlButtonsRight.Controls.Add(btnAddCart);
 
             pnlBottom.Controls.Add(lblStatus);
-            pnlBottom.Controls.Add(btnDetails);
-            pnlBottom.Controls.Add(btnAddCart);
+            pnlBottom.Controls.Add(pnlButtonsRight);
 
             Controls.Add(grid);
             Controls.Add(pnlTop);
@@ -113,16 +126,17 @@ namespace ComputerStore
         #endregion
 
         // ── Control declarations ─────────────────────────────────────
-        private Panel        pnlTop      = null!;
-        private Label        lblTitle    = null!;
-        private TextBox      txtSearch   = null!;
-        private ComboBox     cmbCategory = null!;
-        private Button       btnSearch   = null!;
-        private Button       btnClear    = null!;
-        private DataGridView grid        = null!;
-        private Panel        pnlBottom   = null!;
-        private Label        lblStatus   = null!;
-        private Button       btnAddCart  = null!;
-        private Button       btnDetails  = null!;
+        private Panel           pnlTop          = null!;
+        private Label           lblTitle        = null!;
+        private TextBox         txtSearch       = null!;
+        private ComboBox        cmbCategory     = null!;
+        private Button          btnSearch       = null!;
+        private Button          btnClear        = null!;
+        private DataGridView    grid            = null!;
+        private Panel           pnlBottom       = null!;
+        private FlowLayoutPanel pnlButtonsRight = null!;
+        private Label           lblStatus       = null!;
+        private Button          btnAddCart      = null!;
+        private Button          btnDetails      = null!;
     }
 }

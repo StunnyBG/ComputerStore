@@ -5,6 +5,8 @@ namespace ComputerStore
 {
     public partial class CartControl : UserControl
     {
+        private int _selectedPartId = -1;
+
         public CartControl()
         {
             InitializeComponent();
@@ -14,6 +16,9 @@ namespace ComputerStore
         // ── Refresh ───────────────────────────────────────────────────
         private void RefreshGrid()
         {
+            // Save before DataSource assignment fires SelectionChanged and wipes it.
+            int savedId = _selectedPartId;
+
             grid.DataSource = CatalogControl.Cart.Select(ci => new
             {
                 ci.PartId,
@@ -25,15 +30,38 @@ namespace ComputerStore
 
             if (grid.Columns.Contains("PartId")) grid.Columns["PartId"]!.Visible = false;
 
+            // Restore selection using the saved ID (not _selectedPartId which was reset).
+            if (savedId != -1)
+            {
+                foreach (DataGridViewRow row in grid.Rows)
+                {
+                    if (row.DataBoundItem is null) continue;
+                    dynamic item = row.DataBoundItem!;
+                    if ((int)item.PartId != savedId) continue;
+                    row.Selected        = true;
+                    grid.CurrentCell    = row.Cells[FirstVisibleColumn(grid)];
+                    _selectedPartId     = savedId; // re-sync the field
+                    break;
+                }
+            }
+
             decimal grand = CatalogControl.Cart.Sum(ci => ci.Total);
             lblTotal.Text = $"Grand Total:  {grand:C}";
         }
 
         // ── Events ────────────────────────────────────────────────────
+        private void Grid_SelectionChanged(object sender, EventArgs e)
+        {
+            if (grid.CurrentRow?.DataBoundItem is null) { _selectedPartId = -1; return; }
+            dynamic row = grid.CurrentRow.DataBoundItem!;
+            _selectedPartId = (int)row.PartId;
+        }
+
         private void BtnRemove_Click(object sender, EventArgs e)
         {
-            if (!TryGetSelectedId(out int id)) return;
-            CatalogControl.Cart.RemoveAll(ci => ci.PartId == id);
+            if (_selectedPartId == -1) return;
+            CatalogControl.Cart.RemoveAll(ci => ci.PartId == _selectedPartId);
+            _selectedPartId = -1;
             RefreshGrid();
         }
 
@@ -42,10 +70,20 @@ namespace ComputerStore
 
         private void AdjustQty(int delta)
         {
-            if (!TryGetSelectedId(out int id)) return;
-            var item = CatalogControl.Cart.FirstOrDefault(ci => ci.PartId == id);
+            if (_selectedPartId == -1) return;
+            var item = CatalogControl.Cart.FirstOrDefault(ci => ci.PartId == _selectedPartId);
             if (item is null) return;
-            item.Quantity = Math.Max(1, item.Quantity + delta);
+
+            int newQty = item.Quantity + delta;
+            if (newQty < 1)
+            {
+                CatalogControl.Cart.Remove(item);
+                _selectedPartId = -1;
+            }
+            else
+            {
+                item.Quantity = newQty;
+            }
             RefreshGrid();
         }
 
@@ -56,6 +94,7 @@ namespace ComputerStore
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 CatalogControl.Cart.Clear();
+                _selectedPartId = -1;
                 RefreshGrid();
             }
         }
@@ -75,7 +114,6 @@ namespace ComputerStore
                 using var ctx = DbContextFactory.Create();
                 using var tx  = ctx.Database.BeginTransaction();
 
-                // Validate stock before writing anything
                 foreach (var ci in CatalogControl.Cart)
                 {
                     var part = ctx.PcParts.Find(ci.PartId);
@@ -94,7 +132,7 @@ namespace ComputerStore
                     TotalPrice = total,
                 };
                 ctx.Orders.Add(order);
-                ctx.SaveChanges(); // get order Id
+                ctx.SaveChanges();
 
                 foreach (var ci in CatalogControl.Cart)
                 {
@@ -111,6 +149,7 @@ namespace ComputerStore
                 tx.Commit();
 
                 CatalogControl.Cart.Clear();
+                _selectedPartId = -1;
                 RefreshGrid();
                 MessageBox.Show("✔ Order placed successfully!", "Success",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -123,13 +162,13 @@ namespace ComputerStore
         }
 
         // ── Helpers ──────────────────────────────────────────────────
-        private bool TryGetSelectedId(out int id)
+        // Returns the index of the first visible column so we never try to
+        // set CurrentCell to a hidden column (which throws InvalidOperationException).
+        private static int FirstVisibleColumn(DataGridView g)
         {
-            id = 0;
-            if (grid.CurrentRow?.DataBoundItem is null) return false;
-            dynamic row = grid.CurrentRow.DataBoundItem!;
-            id = (int)row.PartId;
-            return true;
+            foreach (DataGridViewColumn col in g.Columns)
+                if (col.Visible) return col.Index;
+            return 0;
         }
     }
 }
