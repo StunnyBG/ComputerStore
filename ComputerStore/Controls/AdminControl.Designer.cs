@@ -68,15 +68,15 @@ namespace ComputerStore
             };
 
             btnAddPart          = UIFactory.PrimaryButton("➕ Add", 90, 34);
-            btnAddPart.Location = new Point(580, 8);
+            btnAddPart.Location = new Point(520, 8);
             btnAddPart.Click   += BtnAddPart_Click;
 
             btnEditPart          = UIFactory.SecondaryButton("✎ Edit", 80, 34);
-            btnEditPart.Location = new Point(678, 8);
+            btnEditPart.Location = new Point(618, 8);
             btnEditPart.Click   += BtnEditPart_Click;
 
             btnDeletePart          = UIFactory.SecondaryButton("✘ Delete", 90, 34);
-            btnDeletePart.Location = new Point(766, 8);
+            btnDeletePart.Location = new Point(706, 8);
             btnDeletePart.ForeColor = AppColors.ErrorRed;
             btnDeletePart.FlatAppearance.BorderColor = AppColors.ErrorRed;
             btnDeletePart.Click   += BtnDeletePart_Click;
@@ -116,11 +116,11 @@ namespace ComputerStore
             };
 
             btnAddCat          = UIFactory.PrimaryButton("➕ Add", 90, 34);
-            btnAddCat.Location = new Point(678, 8);
+            btnAddCat.Location = new Point(618, 8);
             btnAddCat.Click   += BtnAddCat_Click;
 
             btnDeleteCat          = UIFactory.SecondaryButton("✘ Delete", 90, 34);
-            btnDeleteCat.Location = new Point(776, 8);
+            btnDeleteCat.Location = new Point(716, 8);
             btnDeleteCat.ForeColor = AppColors.ErrorRed;
             btnDeleteCat.FlatAppearance.BorderColor = AppColors.ErrorRed;
             btnDeleteCat.Click   += BtnDeleteCat_Click;
@@ -159,11 +159,11 @@ namespace ComputerStore
             };
 
             btnAddMfr          = UIFactory.PrimaryButton("➕ Add", 90, 34);
-            btnAddMfr.Location = new Point(678, 8);
+            btnAddMfr.Location = new Point(618, 8);
             btnAddMfr.Click   += BtnAddMfr_Click;
 
             btnDeleteMfr          = UIFactory.SecondaryButton("✘ Delete", 90, 34);
-            btnDeleteMfr.Location = new Point(776, 8);
+            btnDeleteMfr.Location = new Point(716, 8);
             btnDeleteMfr.ForeColor = AppColors.ErrorRed;
             btnDeleteMfr.FlatAppearance.BorderColor = AppColors.ErrorRed;
             btnDeleteMfr.Click   += BtnDeleteMfr_Click;
@@ -202,7 +202,7 @@ namespace ComputerStore
             };
 
             btnToggleRole          = UIFactory.SecondaryButton("⇄ Toggle Role", 140, 34);
-            btnToggleRole.Location = new Point(728, 8);
+            btnToggleRole.Location = new Point(650, 8);
             btnToggleRole.Click   += BtnToggleRole_Click;
 
             pnlUsersBar.Controls.Add(lblUsersStatus);

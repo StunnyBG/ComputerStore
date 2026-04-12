@@ -52,7 +52,7 @@ namespace ComputerStore
             };
 
             btnCancelOrder          = UIFactory.SecondaryButton("✘ Cancel Order", 160, 34);
-            btnCancelOrder.Location = new Point(698, 8);
+            btnCancelOrder.Location = new Point(630, 8);
             btnCancelOrder.ForeColor = AppColors.ErrorRed;
             btnCancelOrder.FlatAppearance.BorderColor = AppColors.ErrorRed;
             btnCancelOrder.Click   += BtnCancel_Click;
