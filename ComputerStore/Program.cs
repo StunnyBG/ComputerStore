@@ -1,3 +1,5 @@
+using ComputerStore.Data;
+using ComputerStore.Data.Seeder;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 
@@ -8,11 +10,18 @@ namespace ComputerStore
         [STAThread]
         static void Main()
         {
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+            Thread.CurrentThread.CurrentCulture   = new CultureInfo("en-US");
             Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
 
             using (var ctx = DbContextFactory.Create())
+            {
                 ctx.Database.Migrate();
+
+                string seedDataPath = Path.Combine(
+                    AppContext.BaseDirectory, "SeedData");
+
+                JsonSeeder.Seed(ctx, seedDataPath);
+            }
 
             ApplicationConfiguration.Initialize();
 

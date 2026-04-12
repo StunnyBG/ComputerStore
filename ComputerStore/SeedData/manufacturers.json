@@ -1,0 +1,30 @@
+[
+  { "name": "Intel",          "country": "USA",         "website": "https://www.intel.com" },
+  { "name": "AMD",            "country": "USA",         "website": "https://www.amd.com" },
+  { "name": "NVIDIA",         "country": "USA",         "website": "https://www.nvidia.com" },
+  { "name": "Corsair",        "country": "USA",         "website": "https://www.corsair.com" },
+  { "name": "G.Skill",        "country": "Taiwan",      "website": "https://www.gskill.com" },
+  { "name": "Samsung",        "country": "South Korea", "website": "https://www.samsung.com" },
+  { "name": "WD",             "country": "USA",         "website": "https://www.westerndigital.com" },
+  { "name": "Seagate",        "country": "USA",         "website": "https://www.seagate.com" },
+  { "name": "ASUS",           "country": "Taiwan",      "website": "https://www.asus.com" },
+  { "name": "MSI",            "country": "Taiwan",      "website": "https://www.msi.com" },
+  { "name": "be quiet!",      "country": "Germany",     "website": "https://www.bequiet.com" },
+  { "name": "Fractal Design", "country": "Sweden",      "website": "https://www.fractal-design.com" },
+  { "name": "NZXT",           "country": "USA",         "website": "https://www.nzxt.com" },
+  { "name": "Noctua",         "country": "Austria",     "website": "https://www.noctua.at" },
+  { "name": "LG",             "country": "South Korea", "website": "https://www.lg.com" },
+  { "name": "Logitech",       "country": "Switzerland", "website": "https://www.logitech.com" },
+  { "name": "Kingston",       "country": "USA",         "website": "https://www.kingston.com" },
+  { "name": "Crucial",        "country": "USA",         "website": "https://www.crucial.com" },
+  {
+    "name": null,
+    "country": "Unknown",
+    "website": "https://example.com"
+  },
+  {
+    "name": "ValidName",
+    "country": "This country name is way too long and should exceed the sixty character limit that is set",
+    "website": "https://example.com"
+  }
+]

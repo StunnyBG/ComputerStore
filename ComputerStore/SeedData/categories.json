@@ -1,0 +1,50 @@
+[
+  {
+    "name": "CPU",
+    "description": "Central Processing Units"
+  },
+  {
+    "name": "GPU",
+    "description": "Graphics Processing Units"
+  },
+  {
+    "name": "RAM",
+    "description": "Memory modules"
+  },
+  {
+    "name": "Storage",
+    "description": "SSDs and HDDs"
+  },
+  {
+    "name": "Motherboard",
+    "description": "Mainboards"
+  },
+  {
+    "name": "Power Supply",
+    "description": "PSUs"
+  },
+  {
+    "name": "Case",
+    "description": "PC Cases"
+  },
+  {
+    "name": "Cooling",
+    "description": "CPU and case coolers"
+  },
+  {
+    "name": "Monitor",
+    "description": "PC Displays"
+  },
+  {
+    "name": "Peripherals",
+    "description": "Keyboards, mice and other peripherals"
+  },
+  {
+    "name": "",
+    "description": "This entry has an empty name and will be skipped"
+  },
+  {
+    "name": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "description": "This name exceeds 50 chars and will be skipped"
+  }
+]

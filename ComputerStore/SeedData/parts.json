@@ -1,0 +1,274 @@
+[
+  {
+    "name": "Intel Core i9-14900K",
+    "description": "Intel's flagship consumer desktop CPU with 24 cores (8P+16E).",
+    "price": 589.99,
+    "stock": 15,
+    "categoryName": "CPU",
+    "manufacturerName": "Intel"
+  },
+  {
+    "name": "Intel Core i5-14600K",
+    "description": "Mid-range powerhouse with 14 cores.",
+    "price": 299.99,
+    "stock": 30,
+    "categoryName": "CPU",
+    "manufacturerName": "Intel"
+  },
+  {
+    "name": "Intel Core i7-14700K",
+    "description": "20-core desktop CPU ideal for content creation and gaming.",
+    "price": 399.99,
+    "stock": 20,
+    "categoryName": "CPU",
+    "manufacturerName": "Intel"
+  },
+  {
+    "name": "AMD Ryzen 9 7950X",
+    "description": "16-core high-end desktop CPU on the AM5 platform.",
+    "price": 549.99,
+    "stock": 12,
+    "categoryName": "CPU",
+    "manufacturerName": "AMD"
+  },
+  {
+    "name": "AMD Ryzen 5 7600X",
+    "description": "6-core gaming CPU with excellent single-thread performance.",
+    "price": 229.99,
+    "stock": 40,
+    "categoryName": "CPU",
+    "manufacturerName": "AMD"
+  },
+  {
+    "name": "AMD Ryzen 7 7700X",
+    "description": "8-core desktop CPU, great for gaming and light workstation tasks.",
+    "price": 319.99,
+    "stock": 25,
+    "categoryName": "CPU",
+    "manufacturerName": "AMD"
+  },
+  {
+    "name": "NVIDIA GeForce RTX 4090",
+    "description": "Fastest consumer GPU ever made — 24 GB GDDR6X.",
+    "price": 1599.99,
+    "stock": 8,
+    "categoryName": "GPU",
+    "manufacturerName": "NVIDIA"
+  },
+  {
+    "name": "NVIDIA GeForce RTX 4070",
+    "description": "Excellent 1440p GPU with DLSS 3 support.",
+    "price": 599.99,
+    "stock": 20,
+    "categoryName": "GPU",
+    "manufacturerName": "NVIDIA"
+  },
+  {
+    "name": "NVIDIA GeForce RTX 4060 Ti",
+    "description": "1080p / entry 1440p GPU with Ada Lovelace architecture.",
+    "price": 399.99,
+    "stock": 35,
+    "categoryName": "GPU",
+    "manufacturerName": "NVIDIA"
+  },
+  {
+    "name": "AMD Radeon RX 7900 XTX",
+    "description": "AMD's flagship RDNA 3 GPU with 24 GB GDDR6.",
+    "price": 999.99,
+    "stock": 10,
+    "categoryName": "GPU",
+    "manufacturerName": "AMD"
+  },
+  {
+    "name": "AMD Radeon RX 7600",
+    "description": "Budget-friendly 1080p GPU.",
+    "price": 269.99,
+    "stock": 25,
+    "categoryName": "GPU",
+    "manufacturerName": "AMD"
+  },
+  {
+    "name": "Corsair Vengeance 32GB DDR5-6000",
+    "description": "High-speed DDR5 kit optimised for AMD EXPO and Intel XMP.",
+    "price": 139.99,
+    "stock": 50,
+    "categoryName": "RAM",
+    "manufacturerName": "Corsair"
+  },
+  {
+    "name": "G.Skill Trident Z5 16GB DDR5-5600",
+    "description": "Sleek DDR5 kit with RGB lighting.",
+    "price": 79.99,
+    "stock": 60,
+    "categoryName": "RAM",
+    "manufacturerName": "G.Skill"
+  },
+  {
+    "name": "Kingston Fury Beast 32GB DDR5-5200",
+    "description": "Reliable DDR5 kit for everyday use.",
+    "price": 109.99,
+    "stock": 45,
+    "categoryName": "RAM",
+    "manufacturerName": "Kingston"
+  },
+  {
+    "name": "Crucial Pro 64GB DDR5-5600",
+    "description": "High-capacity DDR5 kit for workstations.",
+    "price": 219.99,
+    "stock": 22,
+    "categoryName": "RAM",
+    "manufacturerName": "Crucial"
+  },
+  {
+    "name": "Samsung 990 Pro 1TB NVMe",
+    "description": "PCIe 4.0 NVMe SSD with up to 7450 MB/s read.",
+    "price": 109.99,
+    "stock": 45,
+    "categoryName": "Storage",
+    "manufacturerName": "Samsung"
+  },
+  {
+    "name": "WD Black SN850X 2TB NVMe",
+    "description": "PCIe 4.0 NVMe SSD optimised for gaming.",
+    "price": 179.99,
+    "stock": 30,
+    "categoryName": "Storage",
+    "manufacturerName": "WD"
+  },
+  {
+    "name": "Seagate Barracuda 4TB HDD",
+    "description": "Reliable 3.5-inch SATA hard drive for bulk storage.",
+    "price": 74.99,
+    "stock": 35,
+    "categoryName": "Storage",
+    "manufacturerName": "Seagate"
+  },
+  {
+    "name": "Samsung 870 EVO 1TB SATA SSD",
+    "description": "Fast SATA SSD, perfect for upgrading older systems.",
+    "price": 89.99,
+    "stock": 40,
+    "categoryName": "Storage",
+    "manufacturerName": "Samsung"
+  },
+  {
+    "name": "ASUS ROG Maximus Z790 Hero",
+    "description": "Premium Z790 motherboard for Intel 12th/13th/14th gen.",
+    "price": 599.99,
+    "stock": 10,
+    "categoryName": "Motherboard",
+    "manufacturerName": "ASUS"
+  },
+  {
+    "name": "MSI MAG B650 TOMAHAWK WIFI",
+    "description": "Feature-rich AM5 motherboard for Ryzen 7000 CPUs.",
+    "price": 229.99,
+    "stock": 22,
+    "categoryName": "Motherboard",
+    "manufacturerName": "MSI"
+  },
+  {
+    "name": "Corsair RM1000x 1000W 80+ Gold",
+    "description": "Fully modular 1000 W PSU with quiet operation.",
+    "price": 189.99,
+    "stock": 20,
+    "categoryName": "Power Supply",
+    "manufacturerName": "Corsair"
+  },
+  {
+    "name": "be quiet! Straight Power 850W",
+    "description": "Ultra-quiet 850 W PSU with 80+ Platinum rating.",
+    "price": 149.99,
+    "stock": 25,
+    "categoryName": "Power Supply",
+    "manufacturerName": "be quiet!"
+  },
+  {
+    "name": "Fractal Design Torrent",
+    "description": "Airflow-optimised mid-tower case.",
+    "price": 179.99,
+    "stock": 15,
+    "categoryName": "Case",
+    "manufacturerName": "Fractal Design"
+  },
+  {
+    "name": "NZXT H510 Flow",
+    "description": "Compact mid-tower with tempered glass side panel.",
+    "price": 99.99,
+    "stock": 20,
+    "categoryName": "Case",
+    "manufacturerName": "NZXT"
+  },
+  {
+    "name": "Noctua NH-D15",
+    "description": "Dual-tower air cooler — near-silent at full load.",
+    "price": 99.99,
+    "stock": 30,
+    "categoryName": "Cooling",
+    "manufacturerName": "Noctua"
+  },
+  {
+    "name": "Corsair H150i Elite LCD",
+    "description": "360 mm AIO liquid cooler with LCD display.",
+    "price": 259.99,
+    "stock": 18,
+    "categoryName": "Cooling",
+    "manufacturerName": "Corsair"
+  },
+  {
+    "name": "LG 27GP850-B 27\" 1440p 165Hz",
+    "description": "Fast IPS gaming monitor with G-Sync Compatible support.",
+    "price": 329.99,
+    "stock": 14,
+    "categoryName": "Monitor",
+    "manufacturerName": "LG"
+  },
+  {
+    "name": "Logitech G Pro X Superlight 2",
+    "description": "Ultra-lightweight wireless gaming mouse.",
+    "price": 159.99,
+    "stock": 40,
+    "categoryName": "Peripherals",
+    "manufacturerName": "Logitech"
+  },
+  {
+    "name": "Logitech G915 TKL Wireless",
+    "description": "Tenkeyless low-profile wireless mechanical keyboard.",
+    "price": 229.99,
+    "stock": 20,
+    "categoryName": "Peripherals",
+    "manufacturerName": "Logitech"
+  },
+  {
+    "name": null,
+    "description": "Missing name — will be skipped by validation.",
+    "price": 49.99,
+    "stock": 10,
+    "categoryName": "Peripherals",
+    "manufacturerName": "Logitech"
+  },
+  {
+    "name": "Valid Name But Negative Price",
+    "description": "Negative price — will be skipped by validation.",
+    "price": -5.00,
+    "stock": 10,
+    "categoryName": "CPU",
+    "manufacturerName": "Intel"
+  },
+  {
+    "name": "Valid Name But Negative Stock",
+    "description": "Negative stock — will be skipped by validation.",
+    "price": 99.99,
+    "stock": -1,
+    "categoryName": "CPU",
+    "manufacturerName": "Intel"
+  },
+  {
+    "name": "Unknown Category Part",
+    "description": "Category does not exist — seeder will skip this.",
+    "price": 99.99,
+    "stock": 5,
+    "categoryName": "NonExistentCategory",
+    "manufacturerName": "Intel"
+  }
+]
