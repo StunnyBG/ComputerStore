@@ -1,11 +1,21 @@
+// ══════════════════════════════════════════════════════════════════════
+// OOP: CatalogControl INHERITS from BaseControl (which inherits UserControl)
+//      Demonstrates the full inheritance chain:
+//      UserControl ← BaseControl ← CatalogControl
+// ══════════════════════════════════════════════════════════════════════
 using ComputerStore.Data.Models;
+using ComputerStore.Infrastructure;   // BaseControl, Algorithms
 using Microsoft.EntityFrameworkCore;
 
 namespace ComputerStore
 {
-    public partial class CatalogControl : UserControl
+    public partial class CatalogControl : BaseControl  // INHERITANCE — extends BaseControl
     {
-        public static List<CartItem> Cart { get; } = new();
+        // ── DATA STRUCTURE: List<CartItem> (static = shared across the app) ─
+        // This is the shopping cart — a List allows O(1) add, O(n) search,
+        // and preserves insertion order (important for the cart UI).
+        // REQUIREMENT: List is one of the ≥3 required data structures.
+        public static List<CartItem> Cart { get; } = new List<CartItem>();
 
         private int    _selectedPartId = -1;
         private string _lastSearch     = "";
@@ -15,10 +25,22 @@ namespace ComputerStore
         {
             InitializeComponent();
             LoadCategories();
-            LoadParts();
+            LoadData();   // called via the abstract contract from BaseControl
         }
 
-        // ── Data ──────────────────────────────────────────────────────
+        // ── OOP: ABSTRACTION — implementing the abstract method ──────────
+        // BaseControl demands every view provides LoadData(); this is ours.
+        public override void LoadData() => LoadParts();
+
+        // ── OOP: POLYMORPHISM — overriding the virtual RefreshView ───────
+        // We extend the base behaviour: reload dropdowns too.
+        public override void RefreshView()
+        {
+            LoadCategories();
+            LoadParts(_lastSearch, _lastCategoryId);
+        }
+
+        // ── Data ──────────────────────────────────────────────────────────
         private void LoadCategories()
         {
             try
@@ -39,26 +61,86 @@ namespace ComputerStore
             _lastSearch     = search;
             _lastCategoryId = categoryId;
 
-            // Save before DataSource assignment fires SelectionChanged and wipes it.
             int savedId = _selectedPartId;
 
             try
             {
                 using var ctx = DbContextFactory.Create();
+
+                // Load all parts (with category filter only — text filter done in-memory
+                // so we can demonstrate our custom search algorithms below).
                 var query = ctx.PcParts
                                .Include(p => p.Category)
                                .Include(p => p.Manufacturer)
                                .AsNoTracking()
                                .AsQueryable();
 
-                if (!string.IsNullOrWhiteSpace(search))
-                    query = query.Where(p => p.Name.Contains(search) ||
-                                             (p.Description != null && p.Description.Contains(search)));
-
                 if (categoryId.HasValue)
                     query = query.Where(p => p.CategoryId == categoryId.Value);
 
-                var parts = query.OrderBy(p => p.Category.Name).ThenBy(p => p.Name).ToList();
+                // Load into a list sorted by name for binary search compatibility
+                var allParts = query.OrderBy(p => p.Name).ToList();
+
+                List<PcPart> parts;
+
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    // ── ALGORITHM CHOICE LOGIC ────────────────────────────
+                    // If the user typed an exact name, try Binary Search first
+                    // (O(log n)) on the name-sorted list.  If not found,
+                    // fall back to Sequential Search (O(n)) which handles
+                    // partial / substring matches.
+                    // ─────────────────────────────────────────────────────
+
+                    // ALGORITHM 2: Binary Search — exact name match
+                    int exactIdx = Algorithms.BinarySearch(
+                        allParts,
+                        search,
+                        p => p.Name);
+
+                    if (exactIdx >= 0)
+                    {
+                        // Binary search found an exact match — show just that one part
+                        parts = new List<PcPart> { allParts[exactIdx] };
+                    }
+                    else
+                    {
+                        // ALGORITHM 1: Sequential Search — substring match
+                        // Collects the indices of all parts whose name or
+                        // description contains the search string.
+                        var indices = Algorithms.SequentialSearchAll(
+                            allParts,
+                            p => p.Name.Contains(search, StringComparison.OrdinalIgnoreCase)
+                              || (p.Description != null &&
+                                  p.Description.Contains(search, StringComparison.OrdinalIgnoreCase)));
+
+                        // Reconstruct the filtered list from the found indices
+                        // DATA STRUCTURE: new List built from sequential-search results
+                        parts = new List<PcPart>(indices.Count);
+                        foreach (int idx in indices)
+                            parts.Add(allParts[idx]);
+                    }
+                }
+                else
+                {
+                    // No text filter — use all parts (already sorted by name)
+                    parts = allParts;
+                }
+
+                // ALGORITHM 3: Bubble Sort — sort the display results by
+                // Category name first, then by Part name (mirrors the
+                // original ordering but uses our own implementation).
+                Algorithms.BubbleSort(parts,
+                    (a, b) =>
+                    {
+                        int catCmp = string.Compare(
+                            a.Category.Name, b.Category.Name,
+                            StringComparison.OrdinalIgnoreCase);
+                        return catCmp != 0
+                            ? catCmp
+                            : string.Compare(a.Name, b.Name,
+                                StringComparison.OrdinalIgnoreCase);
+                    });
 
                 grid.DataSource = parts.Select(p =>
                 {
@@ -77,7 +159,6 @@ namespace ComputerStore
 
                 if (grid.Columns.Contains("Id")) grid.Columns["Id"]!.Visible = false;
 
-                // Restore selection using the locally-saved ID.
                 RestoreGridSelection(savedId);
 
                 lblStatus.Text      = $"{parts.Count} part(s) found.";
@@ -86,7 +167,7 @@ namespace ComputerStore
             catch (Exception ex) { lblStatus.Text = $"Error: {ex.Message}"; }
         }
 
-        // ── Events ────────────────────────────────────────────────────
+        // ── Events ────────────────────────────────────────────────────────
         private void Grid_SelectionChanged(object sender, EventArgs e)
         {
             if (grid.CurrentRow?.DataBoundItem is null) { _selectedPartId = -1; return; }
@@ -111,8 +192,7 @@ namespace ComputerStore
         {
             if (_selectedPartId == -1)
             {
-                MessageBox.Show("Please select a part from the list first.", "Add to Cart",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                ShowInfo("Please select a part from the list first.");
                 return;
             }
 
@@ -127,21 +207,29 @@ namespace ComputerStore
 
                 if (available <= 0)
                 {
+                    // ALGORITHM 1 (sequential search) used to find existing cart item
+                    int cartIdx = Algorithms.SequentialSearch(Cart, ci => ci.PartId == _selectedPartId);
                     MessageBox.Show("No more stock available for this part.", "Add to Cart",
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                var existing = Cart.FirstOrDefault(ci => ci.PartId == _selectedPartId);
-                if (existing is not null)
-                    existing.Quantity++;
+                // ALGORITHM 1: Sequential Search — find existing cart entry
+                int existingIdx = Algorithms.SequentialSearch(Cart, ci => ci.PartId == _selectedPartId);
+                if (existingIdx >= 0)
+                    Cart[existingIdx].Quantity++;
                 else
-                    Cart.Add(new CartItem { PartId = part.Id, Name = part.Name, UnitPrice = part.Price, Quantity = 1 });
+                    Cart.Add(new CartItem
+                    {
+                        PartId    = part.Id,
+                        Name      = part.Name,
+                        UnitPrice = part.Price,
+                        Quantity  = 1
+                    });
 
                 lblStatus.Text      = $"✔ '{part.Name}' added to cart.";
                 lblStatus.ForeColor = AppColors.SuccessGreen;
 
-                // Refresh so InStock column reflects the new cart quantity.
                 LoadParts(_lastSearch, _lastCategoryId);
             }
             catch (Exception ex) { lblStatus.Text = ex.Message; }
@@ -151,8 +239,7 @@ namespace ComputerStore
         {
             if (_selectedPartId == -1)
             {
-                MessageBox.Show("Please select a part from the list first.", "Details",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                ShowInfo("Please select a part from the list first.");
                 return;
             }
 
@@ -173,7 +260,8 @@ namespace ComputerStore
                     $"Stock:        {part.Stock}\n\n"            +
                     $"Description:\n{part.Description ?? "(none)"}";
 
-                MessageBox.Show(info, "Part Details", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(info, "Part Details",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch { }
         }
@@ -181,7 +269,7 @@ namespace ComputerStore
         private void TxtSearch_KeyDown(object sender, KeyEventArgs e)
         { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; BtnSearch_Click(sender, e); } }
 
-        // ── Helpers ──────────────────────────────────────────────────
+        // ── Helpers ──────────────────────────────────────────────────────
         private void RestoreGridSelection(int savedId)
         {
             if (savedId == -1) return;
@@ -190,9 +278,9 @@ namespace ComputerStore
                 if (row.DataBoundItem is null) continue;
                 dynamic item = row.DataBoundItem!;
                 if ((int)item.Id != savedId) continue;
-                row.Selected        = true;
-                grid.CurrentCell    = row.Cells[FirstVisibleColumn(grid)];
-                _selectedPartId     = savedId; // re-sync the field
+                row.Selected     = true;
+                grid.CurrentCell = row.Cells[FirstVisibleColumn(grid)];
+                _selectedPartId  = savedId;
                 break;
             }
         }

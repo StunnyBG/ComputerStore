@@ -1,20 +1,27 @@
+// ══════════════════════════════════════════════════════════════════════
+// OOP: AdminControl INHERITS from BaseControl
+// ══════════════════════════════════════════════════════════════════════
 using ComputerStore.Data.Models;
 using ComputerStore.Data.Models.Enums;
+using ComputerStore.Infrastructure;   // BaseControl
 using Microsoft.EntityFrameworkCore;
 
 namespace ComputerStore
 {
-    public partial class AdminControl : UserControl
+    public partial class AdminControl : BaseControl   // INHERITANCE — extends BaseControl
     {
         public AdminControl()
         {
             if (!Session.IsAdmin)
                 throw new UnauthorizedAccessException("Admin access required.");
             InitializeComponent();
-            LoadAll();
+            LoadData();
         }
 
-        // ── Load ──────────────────────────────────────────────────────
+        // ── OOP: ABSTRACTION — implementing the abstract LoadData contract ─
+        public override void LoadData() => LoadAll();
+
+        // ── Load ──────────────────────────────────────────────────────────
         private void LoadAll() { LoadParts(); LoadCategories(); LoadManufacturers(); LoadUsers(); }
 
         private void LoadParts()
@@ -82,7 +89,7 @@ namespace ComputerStore
             catch (Exception ex) { lblUsersStatus.Text = ex.Message; }
         }
 
-        // ── Parts CRUD ────────────────────────────────────────────────
+        // ── Parts CRUD ────────────────────────────────────────────────────
         private void BtnAddPart_Click(object sender, EventArgs e)
         {
             using var dlg = new PartEditForm();
@@ -107,10 +114,10 @@ namespace ComputerStore
                 if (p is not null) { ctx.PcParts.Remove(p); ctx.SaveChanges(); }
                 LoadParts();
             }
-            catch (Exception ex) { MessageBox.Show(ex.Message, "Error"); }
+            catch (Exception ex) { ShowError(ex.Message); }
         }
 
-        // ── Category CRUD ─────────────────────────────────────────────
+        // ── Category CRUD ─────────────────────────────────────────────────
         private void BtnAddCat_Click(object sender, EventArgs e)
         {
             string name = Prompt("Category name:");
@@ -123,7 +130,7 @@ namespace ComputerStore
                 ctx.SaveChanges();
                 LoadCategories();
             }
-            catch (Exception ex) { MessageBox.Show(ex.Message, "Error"); }
+            catch (Exception ex) { ShowError(ex.Message); }
         }
 
         private void BtnDeleteCat_Click(object sender, EventArgs e)
@@ -136,10 +143,10 @@ namespace ComputerStore
                 if (c is not null) { ctx.Categories.Remove(c); ctx.SaveChanges(); }
                 LoadCategories();
             }
-            catch (Exception ex) { MessageBox.Show($"Cannot delete: {ex.Message}", "Error"); }
+            catch (Exception ex) { ShowError($"Cannot delete: {ex.Message}"); }
         }
 
-        // ── Manufacturer CRUD ─────────────────────────────────────────
+        // ── Manufacturer CRUD ─────────────────────────────────────────────
         private void BtnAddMfr_Click(object sender, EventArgs e)
         {
             string name    = Prompt("Manufacturer name:");
@@ -149,11 +156,16 @@ namespace ComputerStore
             try
             {
                 using var ctx = DbContextFactory.Create();
-                ctx.Manufacturers.Add(new Manufacturer { Name = name.Trim(), Country = country, Website = website });
+                ctx.Manufacturers.Add(new Manufacturer
+                {
+                    Name    = name.Trim(),
+                    Country = country,
+                    Website = website
+                });
                 ctx.SaveChanges();
                 LoadManufacturers();
             }
-            catch (Exception ex) { MessageBox.Show(ex.Message, "Error"); }
+            catch (Exception ex) { ShowError(ex.Message); }
         }
 
         private void BtnDeleteMfr_Click(object sender, EventArgs e)
@@ -166,15 +178,15 @@ namespace ComputerStore
                 if (m is not null) { ctx.Manufacturers.Remove(m); ctx.SaveChanges(); }
                 LoadManufacturers();
             }
-            catch (Exception ex) { MessageBox.Show($"Cannot delete: {ex.Message}", "Error"); }
+            catch (Exception ex) { ShowError($"Cannot delete: {ex.Message}"); }
         }
 
-        // ── Users ─────────────────────────────────────────────────────
+        // ── Users ─────────────────────────────────────────────────────────
         private void BtnToggleRole_Click(object sender, EventArgs e)
         {
             if (!TryGetId(gridUsers, out int id)) return;
             if (id == Session.CurrentUser!.Id)
-            { MessageBox.Show("You cannot change your own role."); return; }
+            { ShowInfo("You cannot change your own role."); return; }
 
             try
             {
@@ -184,10 +196,10 @@ namespace ComputerStore
                 ctx.SaveChanges();
                 LoadUsers();
             }
-            catch (Exception ex) { MessageBox.Show(ex.Message, "Error"); }
+            catch (Exception ex) { ShowError(ex.Message); }
         }
 
-        // ── Helpers ──────────────────────────────────────────────────
+        // ── Helpers ──────────────────────────────────────────────────────
         private static void HideCol(DataGridView g, string col)
         { if (g.Columns.Contains(col)) g.Columns[col]!.Visible = false; }
 
@@ -200,17 +212,20 @@ namespace ComputerStore
             return true;
         }
 
-        private static bool Confirm(string msg)
-            => MessageBox.Show(msg, "Confirm",
-                MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes;
-
         private static string Prompt(string question)
         {
-            using var f  = new Form { Width = 380, Height = 160, Text = question, StartPosition = FormStartPosition.CenterParent, FormBorderStyle = FormBorderStyle.FixedDialog, MaximizeBox = false };
-            var lbl      = new Label  { Text = question, AutoSize = true, Location = new Point(14, 16) };
-            var txt      = new TextBox { Location = new Point(14, 38), Width = 340 };
-            var btnOk    = new Button  { Text = "OK",     DialogResult = DialogResult.OK,     Location = new Point(198, 76), Width = 70 };
-            var btnNo    = new Button  { Text = "Cancel", DialogResult = DialogResult.Cancel, Location = new Point(278, 76), Width = 70 };
+            using var f = new Form
+            {
+                Width           = 380, Height = 160,
+                Text            = question,
+                StartPosition   = FormStartPosition.CenterParent,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                MaximizeBox     = false
+            };
+            var lbl   = new Label  { Text = question, AutoSize = true, Location = new Point(14, 16) };
+            var txt   = new TextBox { Location = new Point(14, 38), Width = 340 };
+            var btnOk = new Button  { Text = "OK",     DialogResult = DialogResult.OK,     Location = new Point(198, 76), Width = 70 };
+            var btnNo = new Button  { Text = "Cancel", DialogResult = DialogResult.Cancel, Location = new Point(278, 76), Width = 70 };
             f.Controls.AddRange(new Control[] { lbl, txt, btnOk, btnNo });
             f.AcceptButton = btnOk;
             f.CancelButton = btnNo;

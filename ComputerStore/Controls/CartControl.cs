@@ -1,25 +1,41 @@
+// ══════════════════════════════════════════════════════════════════════
+// OOP: CartControl INHERITS from BaseControl
+// ══════════════════════════════════════════════════════════════════════
 using ComputerStore.Data.Models;
+using ComputerStore.Infrastructure;   // BaseControl, Algorithms
 using Microsoft.EntityFrameworkCore;
 
 namespace ComputerStore
 {
-    public partial class CartControl : UserControl
+    public partial class CartControl : BaseControl   // INHERITANCE — extends BaseControl
     {
         private int _selectedPartId = -1;
 
         public CartControl()
         {
             InitializeComponent();
-            RefreshGrid();
+            LoadData();
         }
 
-        // ── Refresh ───────────────────────────────────────────────────
+        // ── OOP: ABSTRACTION — implementing the abstract LoadData contract ─
+        public override void LoadData() => RefreshGrid();
+
+        // ── Grid refresh ──────────────────────────────────────────────────
         private void RefreshGrid()
         {
-            // Save before DataSource assignment fires SelectionChanged and wipes it.
             int savedId = _selectedPartId;
 
-            grid.DataSource = CatalogControl.Cart.Select(ci => new
+            // ── DATA STRUCTURE: List<CartItem> (defined in CatalogControl) ─
+            // The cart is already a List<CartItem>. Here we make a copy and
+            // sort it with our custom Bubble Sort before binding to the grid,
+            // so the user sees items ordered by total price descending.
+
+            // ALGORITHM 3: Bubble Sort — sort cart items by total (desc)
+            var sortedCart = new List<CartItem>(CatalogControl.Cart); // copy
+            Algorithms.BubbleSort(sortedCart,
+                (a, b) => b.Total.CompareTo(a.Total));  // descending by total
+
+            grid.DataSource = sortedCart.Select(ci => new
             {
                 ci.PartId,
                 ci.Name,
@@ -30,7 +46,7 @@ namespace ComputerStore
 
             if (grid.Columns.Contains("PartId")) grid.Columns["PartId"]!.Visible = false;
 
-            // Restore selection using the saved ID (not _selectedPartId which was reset).
+            // Restore selection
             if (savedId != -1)
             {
                 foreach (DataGridViewRow row in grid.Rows)
@@ -38,9 +54,9 @@ namespace ComputerStore
                     if (row.DataBoundItem is null) continue;
                     dynamic item = row.DataBoundItem!;
                     if ((int)item.PartId != savedId) continue;
-                    row.Selected        = true;
-                    grid.CurrentCell    = row.Cells[FirstVisibleColumn(grid)];
-                    _selectedPartId     = savedId; // re-sync the field
+                    row.Selected     = true;
+                    grid.CurrentCell = row.Cells[FirstVisibleColumn(grid)];
+                    _selectedPartId  = savedId;
                     break;
                 }
             }
@@ -49,7 +65,7 @@ namespace ComputerStore
             lblTotal.Text = $"Grand Total:  {grand:C}";
         }
 
-        // ── Events ────────────────────────────────────────────────────
+        // ── Events ────────────────────────────────────────────────────────
         private void Grid_SelectionChanged(object sender, EventArgs e)
         {
             if (grid.CurrentRow?.DataBoundItem is null) { _selectedPartId = -1; return; }
@@ -71,13 +87,18 @@ namespace ComputerStore
         private void AdjustQty(int delta)
         {
             if (_selectedPartId == -1) return;
-            var item = CatalogControl.Cart.FirstOrDefault(ci => ci.PartId == _selectedPartId);
-            if (item is null) return;
 
+            // ALGORITHM 1: Sequential Search — find the item in the cart
+            int idx = Algorithms.SequentialSearch(CatalogControl.Cart,
+                ci => ci.PartId == _selectedPartId);
+            if (idx < 0) return;
+
+            var item   = CatalogControl.Cart[idx];
             int newQty = item.Quantity + delta;
+
             if (newQty < 1)
             {
-                CatalogControl.Cart.Remove(item);
+                CatalogControl.Cart.RemoveAt(idx);
                 _selectedPartId = -1;
             }
             else
@@ -91,7 +112,8 @@ namespace ComputerStore
                         if (part is not null && newQty > part.Stock)
                         {
                             MessageBox.Show(
-                                $"Cannot add more '{item.Name}'.\nOnly {part.Stock} unit(s) available in stock.",
+                                $"Cannot add more '{item.Name}'.\n" +
+                                $"Only {part.Stock} unit(s) available in stock.",
                                 "Insufficient Stock",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Warning);
@@ -108,8 +130,7 @@ namespace ComputerStore
         private void BtnClear_Click(object sender, EventArgs e)
         {
             if (CatalogControl.Cart.Count == 0) return;
-            if (MessageBox.Show("Clear the entire cart?", "Confirm",
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            if (Confirm("Clear the entire cart?"))
             {
                 CatalogControl.Cart.Clear();
                 _selectedPartId = -1;
@@ -119,30 +140,41 @@ namespace ComputerStore
 
         private void BtnOrder_Click(object sender, EventArgs e)
         {
-            if (!Session.IsLoggedIn) { MessageBox.Show("Please log in first."); return; }
-            if (CatalogControl.Cart.Count == 0)
-            { MessageBox.Show("Your cart is empty.", "Order"); return; }
+            if (!Session.IsLoggedIn)  { ShowInfo("Please log in first."); return; }
+            if (CatalogControl.Cart.Count == 0) { ShowInfo("Your cart is empty."); return; }
 
             decimal total = CatalogControl.Cart.Sum(ci => ci.Total);
-            if (MessageBox.Show($"Place order for {total:C}?", "Confirm Order",
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+            if (!Confirm($"Place order for {total:C}?")) return;
 
             try
             {
                 using var ctx = DbContextFactory.Create();
                 using var tx  = ctx.Database.BeginTransaction();
 
-                foreach (var ci in CatalogControl.Cart)
+                // ── DATA STRUCTURE: Queue<CartItem> ───────────────────────
+                // REQUIREMENT: Queue is the 4th data structure demonstrated.
+                // We enqueue each cart item for validation, then dequeue them
+                // one-by-one for DB insertion.  This guarantees:
+                //   • All items are validated BEFORE any DB write begins
+                //   • Items are inserted in FIFO order (same as cart order)
+                // ─────────────────────────────────────────────────────────
+                var orderQueue = new Queue<CartItem>(CatalogControl.Cart);
+
+                // Validation pass — peek at every item without dequeuing
+                foreach (var ci in orderQueue)
                 {
                     var part = ctx.PcParts.Find(ci.PartId);
                     if (part is null || part.Stock < ci.Quantity)
                     {
-                        MessageBox.Show($"Insufficient stock for '{ci.Name}'.", "Order Failed",
+                        MessageBox.Show(
+                            $"Insufficient stock for '{ci.Name}'.",
+                            "Order Failed",
                             MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
                 }
 
+                // Create the order header
                 var order = new Order
                 {
                     UserId     = Session.CurrentUser!.Id,
@@ -152,8 +184,11 @@ namespace ComputerStore
                 ctx.Orders.Add(order);
                 ctx.SaveChanges();
 
-                foreach (var ci in CatalogControl.Cart)
+                // Insertion pass — dequeue and persist each item
+                while (orderQueue.Count > 0)
                 {
+                    var ci = orderQueue.Dequeue();   // Queue.Dequeue() — FIFO removal
+
                     ctx.OrderItems.Add(new OrderItem
                     {
                         OrderId   = order.Id,
@@ -163,25 +198,22 @@ namespace ComputerStore
                     });
                     ctx.PcParts.Find(ci.PartId)!.Stock -= ci.Quantity;
                 }
+
                 ctx.SaveChanges();
                 tx.Commit();
 
                 CatalogControl.Cart.Clear();
                 _selectedPartId = -1;
                 RefreshGrid();
-                MessageBox.Show("✔ Order placed successfully!", "Success",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                ShowInfo("✔ Order placed successfully!");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error placing order:\n{ex.Message}", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowError($"Error placing order:\n{ex.Message}");
             }
         }
 
-        // ── Helpers ──────────────────────────────────────────────────
-        // Returns the index of the first visible column so we never try to
-        // set CurrentCell to a hidden column (which throws InvalidOperationException).
+        // ── Helpers ──────────────────────────────────────────────────────
         private static int FirstVisibleColumn(DataGridView g)
         {
             foreach (DataGridViewColumn col in g.Columns)

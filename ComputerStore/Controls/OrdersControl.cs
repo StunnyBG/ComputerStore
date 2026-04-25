@@ -1,17 +1,24 @@
+// ══════════════════════════════════════════════════════════════════════
+// OOP: OrdersControl INHERITS from BaseControl
+// ══════════════════════════════════════════════════════════════════════
 using ComputerStore.Data.Models.Enums;
+using ComputerStore.Infrastructure;   // BaseControl
 using Microsoft.EntityFrameworkCore;
 
 namespace ComputerStore
 {
-    public partial class OrdersControl : UserControl
+    public partial class OrdersControl : BaseControl   // INHERITANCE — extends BaseControl
     {
         public OrdersControl()
         {
             InitializeComponent();
-            LoadOrders();
+            LoadData();
         }
 
-        // ── Data ──────────────────────────────────────────────────────
+        // ── OOP: ABSTRACTION — implementing the abstract LoadData contract ─
+        public override void LoadData() => LoadOrders();
+
+        // ── Data ──────────────────────────────────────────────────────────
         private void LoadOrders()
         {
             try
@@ -22,6 +29,7 @@ namespace ComputerStore
                 if (!Session.IsAdmin)
                     query = query.Where(o => o.UserId == Session.CurrentUser!.Id);
 
+                // DATA STRUCTURE: List<Order> — holds the result set for display
                 var orders = query.OrderByDescending(o => o.OrderDate).ToList();
 
                 gridOrders.DataSource = orders.Select(o => new
@@ -33,7 +41,8 @@ namespace ComputerStore
                     User   = o.User.Username,
                 }).ToList();
 
-                if (gridOrders.Columns.Contains("Id"))   gridOrders.Columns["Id"]!.Visible   = false;
+                if (gridOrders.Columns.Contains("Id"))
+                    gridOrders.Columns["Id"]!.Visible = false;
                 if (!Session.IsAdmin && gridOrders.Columns.Contains("User"))
                     gridOrders.Columns["User"]!.Visible = false;
 
@@ -64,7 +73,7 @@ namespace ComputerStore
             catch { }
         }
 
-        // ── Events ────────────────────────────────────────────────────
+        // ── Events ────────────────────────────────────────────────────────
         private void GridOrders_SelectionChanged(object sender, EventArgs e)
         {
             if (gridOrders.CurrentRow?.DataBoundItem is null) return;
@@ -80,10 +89,12 @@ namespace ComputerStore
             string  status = (string)row.Status;
 
             if (status != "Pending")
-            { MessageBox.Show("Only Pending orders can be cancelled.", "Cancel Order"); return; }
+            {
+                ShowInfo("Only Pending orders can be cancelled.");
+                return;
+            }
 
-            if (MessageBox.Show("Cancel this order and restore stock?", "Confirm",
-                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+            if (!Confirm("Cancel this order and restore stock?")) return;
 
             try
             {
@@ -100,10 +111,9 @@ namespace ComputerStore
                 ctx.SaveChanges();
                 LoadOrders();
                 gridItems.DataSource = null;
-                MessageBox.Show("Order cancelled and stock restored.", "Done",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                ShowInfo("Order cancelled and stock restored.");
             }
-            catch (Exception ex) { MessageBox.Show(ex.Message, "Error"); }
+            catch (Exception ex) { ShowError(ex.Message); }
         }
     }
 }

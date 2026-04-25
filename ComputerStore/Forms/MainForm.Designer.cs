@@ -18,12 +18,12 @@ namespace ComputerStore
             components = new System.ComponentModel.Container();
 
             // ── Form ────────────────────────────────────────────────
-            Text         = "💻 ComputerStore";
-            Size         = new Size(1050, 680);
-            MinimumSize  = new Size(900, 580);
+            Text          = "💻 ComputerStore";
+            Size          = new Size(1050, 680);
+            MinimumSize   = new Size(900, 580);
             StartPosition = FormStartPosition.CenterScreen;
-            BackColor    = AppColors.Background;
-            Font         = new Font("Segoe UI", 9.5f);
+            BackColor     = AppColors.Background;
+            Font          = new Font("Segoe UI", 9.5f);
 
             // ── Sidebar ──────────────────────────────────────────────
             pnlSidebar = new Panel
@@ -56,6 +56,12 @@ namespace ComputerStore
             btnCatalog = CreateSidebarButton("🖥️  Catalog");
             btnCatalog.Click += BtnCatalog_Click;
 
+            // Back button — uses the navigation Stack (DATA STRUCTURE)
+            btnBack = CreateSidebarButton("◀  Back");
+            btnBack.Click   += BtnBack_Click;
+            btnBack.Enabled  = false;          // disabled until there is history
+            btnBack.ForeColor = Color.FromArgb(180, 210, 255);
+
             // Divider
             pnlDivider = new Panel
             {
@@ -80,11 +86,12 @@ namespace ComputerStore
                 TextAlign = ContentAlignment.MiddleCenter,
             };
 
-            // Add controls — Dock=Top items go in last (render first/topmost)
+            // Add controls — Dock=Top items rendered top-to-bottom
             pnlSidebar.Controls.Add(btnAdmin);
             pnlSidebar.Controls.Add(btnOrders);
             pnlSidebar.Controls.Add(btnCart);
             pnlSidebar.Controls.Add(btnCatalog);
+            pnlSidebar.Controls.Add(btnBack);
             pnlSidebar.Controls.Add(lblLogo);
             pnlSidebar.Controls.Add(pnlDivider);
             pnlSidebar.Controls.Add(btnLogout);
@@ -119,7 +126,7 @@ namespace ComputerStore
                 Padding   = new Padding(16, 0, 0, 0),
                 Cursor    = Cursors.Hand,
             };
-            btn.FlatAppearance.BorderSize        = 0;
+            btn.FlatAppearance.BorderSize         = 0;
             btn.FlatAppearance.MouseOverBackColor = AppColors.LightBlue;
             return btn;
         }
@@ -133,6 +140,7 @@ namespace ComputerStore
         private Button btnCart     = null!;
         private Button btnOrders   = null!;
         private Button btnAdmin    = null!;
+        private Button btnBack     = null!;   // Stack-powered back navigation
         private Button btnLogout   = null!;
         private Panel  pnlDivider  = null!;
     }
