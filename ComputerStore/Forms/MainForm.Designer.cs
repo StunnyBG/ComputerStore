@@ -1,3 +1,5 @@
+using ComputerStore.Infrastructure;
+
 namespace ComputerStore
 {
     partial class MainForm

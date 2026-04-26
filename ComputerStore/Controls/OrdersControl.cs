@@ -1,119 +1,86 @@
 // ══════════════════════════════════════════════════════════════════════
-// OOP: OrdersControl INHERITS from BaseControl
+// OOP: OrdersControl → BaseControl → UserControl
 // ══════════════════════════════════════════════════════════════════════
-using ComputerStore.Data.Models.Enums;
-using ComputerStore.Infrastructure;   // BaseControl
-using Microsoft.EntityFrameworkCore;
+using ComputerStore.Infrastructure;
 
-namespace ComputerStore
+namespace ComputerStore;
+
+public partial class OrdersControl : BaseControl
 {
-    public partial class OrdersControl : BaseControl   // INHERITANCE — extends BaseControl
+    private readonly IOrderService _orders = ServiceLocator.Orders;
+
+    public OrdersControl()
     {
-        public OrdersControl()
+        InitializeComponent();
+        LoadData();
+    }
+
+    // ── OOP: ABSTRACTION ─────────────────────────────────────────────
+    public override void LoadData() => LoadOrders();
+
+    // ── Data ──────────────────────────────────────────────────────────
+    private void LoadOrders()
+    {
+        try
         {
-            InitializeComponent();
-            LoadData();
+            var orders = _orders.GetOrders(Session.CurrentUser!.Id, Session.IsAdmin);
+
+            // Typed OrderRow — SelectionChanged uses pattern-match, no dynamic
+            gridOrders.DataSource = orders.Select(o => new OrderRow(
+                o.Id,
+                o.OrderDate.ToLocalTime().ToString("dd-MM-yyyy HH:mm"),
+                o.Status.ToString(),
+                o.TotalPrice.ToString("C"),
+                o.User.Username)).ToList();
+
+            if (gridOrders.Columns.Contains("Id"))
+                gridOrders.Columns["Id"]!.Visible = false;
+
+            if (!Session.IsAdmin && gridOrders.Columns.Contains("User"))
+                gridOrders.Columns["User"]!.Visible = false;
+
+            lblStatus.Text = $"{orders.Count} order(s).";
         }
+        catch (Exception ex) { lblStatus.Text = ex.Message; }
+    }
 
-        // ── OOP: ABSTRACTION — implementing the abstract LoadData contract ─
-        public override void LoadData() => LoadOrders();
-
-        // ── Data ──────────────────────────────────────────────────────────
-        private void LoadOrders()
+    private void LoadOrderItems(int orderId)
+    {
+        try
         {
-            try
-            {
-                using var ctx = DbContextFactory.Create();
-                var query = ctx.Orders.Include(o => o.User).AsNoTracking().AsQueryable();
-
-                if (!Session.IsAdmin)
-                    query = query.Where(o => o.UserId == Session.CurrentUser!.Id);
-
-                // DATA STRUCTURE: List<Order> — holds the result set for display
-                var orders = query.OrderByDescending(o => o.OrderDate).ToList();
-
-                gridOrders.DataSource = orders.Select(o => new
-                {
-                    o.Id,
-                    Date   = o.OrderDate.ToLocalTime().ToString("dd-MM-yyyy HH:mm"),
-                    Status = o.Status.ToString(),
-                    Total  = o.TotalPrice.ToString("C"),
-                    User   = o.User.Username,
-                }).ToList();
-
-                if (gridOrders.Columns.Contains("Id"))
-                    gridOrders.Columns["Id"]!.Visible = false;
-                if (!Session.IsAdmin && gridOrders.Columns.Contains("User"))
-                    gridOrders.Columns["User"]!.Visible = false;
-
-                lblStatus.Text = $"{orders.Count} order(s).";
-            }
-            catch (Exception ex) { lblStatus.Text = ex.Message; }
+            var items = _orders.GetOrderItems(orderId);
+            gridItems.DataSource = items.Select(oi => new OrderItemRow(
+                oi.PcPart.Name,
+                oi.Quantity,
+                oi.UnitPrice.ToString("C"),
+                (oi.UnitPrice * oi.Quantity).ToString("C"))).ToList();
         }
+        catch { }
+    }
 
-        private void LoadOrderItems(int orderId)
+    // ── Events ────────────────────────────────────────────────────────
+    private void GridOrders_SelectionChanged(object sender, EventArgs e)
+    {
+        if (gridOrders.CurrentRow?.DataBoundItem is OrderRow row)
+            LoadOrderItems(row.Id);
+    }
+
+    private void BtnCancel_Click(object sender, EventArgs e)
+    {
+        if (gridOrders.CurrentRow?.DataBoundItem is not OrderRow row) return;
+
+        if (row.Status != "Pending")
+        { ShowInfo("Only Pending orders can be cancelled."); return; }
+
+        if (!Confirm("Cancel this order and restore stock?")) return;
+
+        try
         {
-            try
-            {
-                using var ctx = DbContextFactory.Create();
-                var items = ctx.OrderItems
-                               .Include(oi => oi.PcPart)
-                               .AsNoTracking()
-                               .Where(oi => oi.OrderId == orderId)
-                               .ToList();
-
-                gridItems.DataSource = items.Select(oi => new
-                {
-                    Part      = oi.PcPart.Name,
-                    Qty       = oi.Quantity,
-                    UnitPrice = oi.UnitPrice.ToString("C"),
-                    Total     = (oi.UnitPrice * oi.Quantity).ToString("C"),
-                }).ToList();
-            }
-            catch { }
+            _orders.CancelOrder(row.Id);
+            LoadOrders();
+            gridItems.DataSource = null;
+            ShowInfo("Order cancelled and stock restored.");
         }
-
-        // ── Events ────────────────────────────────────────────────────────
-        private void GridOrders_SelectionChanged(object sender, EventArgs e)
-        {
-            if (gridOrders.CurrentRow?.DataBoundItem is null) return;
-            dynamic row = gridOrders.CurrentRow.DataBoundItem!;
-            LoadOrderItems((int)row.Id);
-        }
-
-        private void BtnCancel_Click(object sender, EventArgs e)
-        {
-            if (gridOrders.CurrentRow?.DataBoundItem is null) return;
-            dynamic row    = gridOrders.CurrentRow.DataBoundItem!;
-            int     id     = (int)row.Id;
-            string  status = (string)row.Status;
-
-            if (status != "Pending")
-            {
-                ShowInfo("Only Pending orders can be cancelled.");
-                return;
-            }
-
-            if (!Confirm("Cancel this order and restore stock?")) return;
-
-            try
-            {
-                using var ctx = DbContextFactory.Create();
-                var order = ctx.Orders
-                               .Include(o => o.OrderItems)
-                               .ThenInclude(oi => oi.PcPart)
-                               .First(o => o.Id == id);
-
-                order.Status = OrderStatus.Cancelled;
-                foreach (var oi in order.OrderItems)
-                    oi.PcPart.Stock += oi.Quantity;
-
-                ctx.SaveChanges();
-                LoadOrders();
-                gridItems.DataSource = null;
-                ShowInfo("Order cancelled and stock restored.");
-            }
-            catch (Exception ex) { ShowError(ex.Message); }
-        }
+        catch (Exception ex) { ShowError(ex.Message); }
     }
 }

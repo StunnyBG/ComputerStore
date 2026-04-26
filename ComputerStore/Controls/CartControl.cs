@@ -1,224 +1,140 @@
 // ══════════════════════════════════════════════════════════════════════
-// OOP: CartControl INHERITS from BaseControl
+// OOP:      CartControl → BaseControl → UserControl
+// ALGORITHM: BubbleSort used to sort cart display; Queue in OrderService
 // ══════════════════════════════════════════════════════════════════════
-using ComputerStore.Data.Models;
-using ComputerStore.Infrastructure;   // BaseControl, Algorithms
-using Microsoft.EntityFrameworkCore;
+using ComputerStore.Infrastructure;
 
-namespace ComputerStore
+namespace ComputerStore;
+
+public partial class CartControl : BaseControl
 {
-    public partial class CartControl : BaseControl   // INHERITANCE — extends BaseControl
+    private readonly CartService   _cart   = ServiceLocator.Cart;
+    private readonly IOrderService _orders = ServiceLocator.Orders;
+
+    private int _selectedPartId = -1;
+
+    public CartControl()
     {
-        private int _selectedPartId = -1;
+        InitializeComponent();
+        LoadData();
+    }
 
-        public CartControl()
-        {
-            InitializeComponent();
-            LoadData();
-        }
+    // ── OOP: ABSTRACTION ─────────────────────────────────────────────
+    public override void LoadData() => RefreshGrid();
 
-        // ── OOP: ABSTRACTION — implementing the abstract LoadData contract ─
-        public override void LoadData() => RefreshGrid();
+    // ── Grid ──────────────────────────────────────────────────────────
+    private void RefreshGrid()
+    {
+        int savedId = _selectedPartId;
 
-        // ── Grid refresh ──────────────────────────────────────────────────
-        private void RefreshGrid()
-        {
-            int savedId = _selectedPartId;
+        // Copy and sort by Total descending using BubbleSort (ALGORITHM 3)
+        var items = _cart.Items.ToList();
+        Algorithms.BubbleSort(items, (a, b) => b.Total.CompareTo(a.Total));
 
-            // ── DATA STRUCTURE: List<CartItem> (defined in CatalogControl) ─
-            // The cart is already a List<CartItem>. Here we make a copy and
-            // sort it with our custom Bubble Sort before binding to the grid,
-            // so the user sees items ordered by total price descending.
+        // Typed CartRow — no dynamic needed in SelectionChanged
+        grid.DataSource = items.Select(ci => new CartRow(
+            ci.PartId, ci.Name,
+            ci.UnitPrice.ToString("C"),
+            ci.Quantity,
+            ci.Total.ToString("C"))).ToList();
 
-            // ALGORITHM 3: Bubble Sort — sort cart items by total (desc)
-            var sortedCart = new List<CartItem>(CatalogControl.Cart); // copy
-            Algorithms.BubbleSort(sortedCart,
-                (a, b) => b.Total.CompareTo(a.Total));  // descending by total
+        if (grid.Columns.Contains("PartId")) grid.Columns["PartId"]!.Visible = false;
 
-            grid.DataSource = sortedCart.Select(ci => new
+        // Restore selection after rebind
+        if (savedId != -1)
+            foreach (DataGridViewRow row in grid.Rows)
             {
-                ci.PartId,
-                ci.Name,
-                UnitPrice = ci.UnitPrice.ToString("C"),
-                ci.Quantity,
-                Total = ci.Total.ToString("C"),
-            }).ToList();
-
-            if (grid.Columns.Contains("PartId")) grid.Columns["PartId"]!.Visible = false;
-
-            // Restore selection
-            if (savedId != -1)
-            {
-                foreach (DataGridViewRow row in grid.Rows)
-                {
-                    if (row.DataBoundItem is null) continue;
-                    dynamic item = row.DataBoundItem!;
-                    if ((int)item.PartId != savedId) continue;
-                    row.Selected     = true;
-                    grid.CurrentCell = row.Cells[FirstVisibleColumn(grid)];
-                    _selectedPartId  = savedId;
-                    break;
-                }
+                if (row.DataBoundItem is not CartRow item || item.PartId != savedId) continue;
+                row.Selected     = true;
+                grid.CurrentCell = row.Cells[FirstVisible(grid)];
+                _selectedPartId  = savedId;
+                break;
             }
 
-            decimal grand = CatalogControl.Cart.Sum(ci => ci.Total);
-            lblTotal.Text = $"Grand Total:  {grand:C}";
-        }
+        lblTotal.Text = $"Grand Total:  {_cart.Total:C}";
+    }
 
-        // ── Events ────────────────────────────────────────────────────────
-        private void Grid_SelectionChanged(object sender, EventArgs e)
+    // ── Events ────────────────────────────────────────────────────────
+    private void Grid_SelectionChanged(object sender, EventArgs e)
+    {
+        _selectedPartId = grid.CurrentRow?.DataBoundItem is CartRow row ? row.PartId : -1;
+    }
+
+    private void BtnRemove_Click(object sender, EventArgs e)
+    {
+        if (_selectedPartId == -1) return;
+        _cart.Remove(_selectedPartId);
+        _selectedPartId = -1;
+        RefreshGrid();
+    }
+
+    private void BtnInc_Click(object sender, EventArgs e) => AdjustQty(+1);
+    private void BtnDec_Click(object sender, EventArgs e) => AdjustQty(-1);
+
+    private void AdjustQty(int delta)
+    {
+        if (_selectedPartId == -1) return;
+
+        if (delta > 0)
         {
-            if (grid.CurrentRow?.DataBoundItem is null) { _selectedPartId = -1; return; }
-            dynamic row = grid.CurrentRow.DataBoundItem!;
-            _selectedPartId = (int)row.PartId;
-        }
-
-        private void BtnRemove_Click(object sender, EventArgs e)
-        {
-            if (_selectedPartId == -1) return;
-            CatalogControl.Cart.RemoveAll(ci => ci.PartId == _selectedPartId);
-            _selectedPartId = -1;
-            RefreshGrid();
-        }
-
-        private void BtnInc_Click(object sender, EventArgs e) => AdjustQty(+1);
-        private void BtnDec_Click(object sender, EventArgs e) => AdjustQty(-1);
-
-        private void AdjustQty(int delta)
-        {
-            if (_selectedPartId == -1) return;
-
-            // ALGORITHM 1: Sequential Search — find the item in the cart
-            int idx = Algorithms.SequentialSearch(CatalogControl.Cart,
-                ci => ci.PartId == _selectedPartId);
-            if (idx < 0) return;
-
-            var item   = CatalogControl.Cart[idx];
-            int newQty = item.Quantity + delta;
-
-            if (newQty < 1)
-            {
-                CatalogControl.Cart.RemoveAt(idx);
-                _selectedPartId = -1;
-            }
-            else
-            {
-                if (delta > 0)
-                {
-                    try
-                    {
-                        using var ctx = DbContextFactory.Create();
-                        var part = ctx.PcParts.Find(_selectedPartId);
-                        if (part is not null && newQty > part.Stock)
-                        {
-                            MessageBox.Show(
-                                $"Cannot add more '{item.Name}'.\n" +
-                                $"Only {part.Stock} unit(s) available in stock.",
-                                "Insufficient Stock",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Warning);
-                            return;
-                        }
-                    }
-                    catch { }
-                }
-                item.Quantity = newQty;
-            }
-            RefreshGrid();
-        }
-
-        private void BtnClear_Click(object sender, EventArgs e)
-        {
-            if (CatalogControl.Cart.Count == 0) return;
-            if (Confirm("Clear the entire cart?"))
-            {
-                CatalogControl.Cart.Clear();
-                _selectedPartId = -1;
-                RefreshGrid();
-            }
-        }
-
-        private void BtnOrder_Click(object sender, EventArgs e)
-        {
-            if (!Session.IsLoggedIn)  { ShowInfo("Please log in first."); return; }
-            if (CatalogControl.Cart.Count == 0) { ShowInfo("Your cart is empty."); return; }
-
-            decimal total = CatalogControl.Cart.Sum(ci => ci.Total);
-            if (!Confirm($"Place order for {total:C}?")) return;
-
             try
             {
-                using var ctx = DbContextFactory.Create();
-                using var tx  = ctx.Database.BeginTransaction();
-
-                // ── DATA STRUCTURE: Queue<CartItem> ───────────────────────
-                // REQUIREMENT: Queue is the 4th data structure demonstrated.
-                // We enqueue each cart item for validation, then dequeue them
-                // one-by-one for DB insertion.  This guarantees:
-                //   • All items are validated BEFORE any DB write begins
-                //   • Items are inserted in FIFO order (same as cart order)
-                // ─────────────────────────────────────────────────────────
-                var orderQueue = new Queue<CartItem>(CatalogControl.Cart);
-
-                // Validation pass — peek at every item without dequeuing
-                foreach (var ci in orderQueue)
+                var part = ServiceLocator.Parts.GetById(_selectedPartId);
+                if (part is not null && !_cart.TryAdjust(_selectedPartId, delta, part.Stock))
                 {
-                    var part = ctx.PcParts.Find(ci.PartId);
-                    if (part is null || part.Stock < ci.Quantity)
-                    {
-                        MessageBox.Show(
-                            $"Insufficient stock for '{ci.Name}'.",
-                            "Order Failed",
-                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        return;
-                    }
+                    MessageBox.Show($"Only {part.Stock} unit(s) available in stock.",
+                        "Insufficient Stock", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
                 }
-
-                // Create the order header
-                var order = new Order
-                {
-                    UserId     = Session.CurrentUser!.Id,
-                    OrderDate  = DateTime.UtcNow,
-                    TotalPrice = total,
-                };
-                ctx.Orders.Add(order);
-                ctx.SaveChanges();
-
-                // Insertion pass — dequeue and persist each item
-                while (orderQueue.Count > 0)
-                {
-                    var ci = orderQueue.Dequeue();   // Queue.Dequeue() — FIFO removal
-
-                    ctx.OrderItems.Add(new OrderItem
-                    {
-                        OrderId   = order.Id,
-                        PcPartId  = ci.PartId,
-                        Quantity  = ci.Quantity,
-                        UnitPrice = ci.UnitPrice,
-                    });
-                    ctx.PcParts.Find(ci.PartId)!.Stock -= ci.Quantity;
-                }
-
-                ctx.SaveChanges();
-                tx.Commit();
-
-                CatalogControl.Cart.Clear();
-                _selectedPartId = -1;
-                RefreshGrid();
-                ShowInfo("✔ Order placed successfully!");
             }
-            catch (Exception ex)
-            {
-                ShowError($"Error placing order:\n{ex.Message}");
-            }
+            catch { return; }
         }
-
-        // ── Helpers ──────────────────────────────────────────────────────
-        private static int FirstVisibleColumn(DataGridView g)
+        else
         {
-            foreach (DataGridViewColumn col in g.Columns)
-                if (col.Visible) return col.Index;
-            return 0;
+            _cart.TryAdjust(_selectedPartId, delta);
+            if (_cart.GetQuantityInCart(_selectedPartId) == 0)
+                _selectedPartId = -1;
         }
+
+        RefreshGrid();
+    }
+
+    private void BtnClear_Click(object sender, EventArgs e)
+    {
+        if (_cart.Count == 0 || !Confirm("Clear the entire cart?")) return;
+        _cart.Clear();
+        _selectedPartId = -1;
+        RefreshGrid();
+    }
+
+    private void BtnOrder_Click(object sender, EventArgs e)
+    {
+        if (!Session.IsLoggedIn) { ShowInfo("Please log in first."); return; }
+        if (_cart.Count == 0)    { ShowInfo("Your cart is empty.");  return; }
+        if (!Confirm($"Place order for {_cart.Total:C}?")) return;
+
+        try
+        {
+            // Queue + DB validation lives inside OrderService.PlaceOrder
+            _orders.PlaceOrder(Session.CurrentUser!.Id, _cart.ToOrderLines());
+            _cart.Clear();
+            _selectedPartId = -1;
+            RefreshGrid();
+            ShowInfo("✔ Order placed successfully!");
+        }
+        catch (InvalidOperationException ex)
+        {
+            MessageBox.Show(ex.Message, "Order Failed",
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+        catch (Exception ex) { ShowError($"Error placing order:\n{ex.Message}"); }
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────
+    private static int FirstVisible(DataGridView g)
+    {
+        foreach (DataGridViewColumn c in g.Columns)
+            if (c.Visible) return c.Index;
+        return 0;
     }
 }

@@ -18,10 +18,9 @@
   <ItemGroup>
     <ProjectReference Include="..\ComputerStore.Common\ComputerStore.Common.csproj" />
     <ProjectReference Include="..\ComputerStore.Data\ComputerStore.Data.csproj" />
+    <ProjectReference Include="..\ComputerStore.Services\ComputerStore.Services.csproj" />
   </ItemGroup>
 
-  <!-- Copy JSON seed files to the output directory so they are
-       available next to the .exe at runtime. -->
   <ItemGroup>
     <Content Include="SeedData\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
