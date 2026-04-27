@@ -5,13 +5,15 @@
 // ══════════════════════════════════════════════════════════════════════
 using ComputerStore.Data.Models;
 using ComputerStore.Infrastructure;
+using ComputerStore.Models;
+using ComputerStore.Services.Interfaces;
 
 namespace ComputerStore;
 
 public partial class CatalogControl : BaseControl
 {
     private readonly IPartService _parts = ServiceLocator.Parts;
-    private readonly CartService  _cart  = ServiceLocator.Cart;
+    private readonly ICartService _cart = ServiceLocator.Cart;
 
     private int    _selectedPartId  = -1;
     private string _lastSearch      = string.Empty;

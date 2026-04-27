@@ -1,4 +1,6 @@
+using ComputerStore.Services;
 using ComputerStore.Services.Implementations;
+using ComputerStore.Services.Interfaces;
 
 namespace ComputerStore.Infrastructure;
 
@@ -16,8 +18,5 @@ public static class ServiceLocator
     public static IPartService  Parts  { get; } = new PartService();
     public static IOrderService Orders { get; } = new OrderService();
     public static IUserService  Users  { get; } = new UserService();
-
-    // CartService lives in the WinForms project (Services/) because
-    // it is pure in-memory UI state — it never touches the database.
-    public static CartService Cart { get; } = new CartService();
+    public static ICartService Cart { get; } = new CartService();
 }

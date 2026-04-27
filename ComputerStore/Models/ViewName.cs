@@ -1,4 +1,4 @@
-namespace ComputerStore.Infrastructure;
+namespace ComputerStore.Models;
 
 /// <summary>
 /// Identifies each top-level view for the navigation Stack.

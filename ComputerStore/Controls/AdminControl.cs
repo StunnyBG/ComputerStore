@@ -3,6 +3,8 @@
 // FIX: no constructor throw; typed TryGetId<TRow> replaces dynamic casts
 // ══════════════════════════════════════════════════════════════════════
 using ComputerStore.Infrastructure;
+using ComputerStore.Models;
+using ComputerStore.Services.Interfaces;
 
 namespace ComputerStore;
 

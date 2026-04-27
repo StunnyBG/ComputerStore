@@ -2,6 +2,8 @@
 // OOP: OrdersControl → BaseControl → UserControl
 // ══════════════════════════════════════════════════════════════════════
 using ComputerStore.Infrastructure;
+using ComputerStore.Models;
+using ComputerStore.Services.Interfaces;
 
 namespace ComputerStore;
 

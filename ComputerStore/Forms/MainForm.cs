@@ -3,6 +3,7 @@
 // OOP:           MainForm inherits from Form
 // ══════════════════════════════════════════════════════════════════════
 using ComputerStore.Infrastructure;
+using ComputerStore.Models;
 
 namespace ComputerStore;
 

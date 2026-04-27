@@ -1,4 +1,4 @@
-namespace ComputerStore;
+namespace ComputerStore.Models;
 
 // ══════════════════════════════════════════════════════════════════════
 // TYPED GRID VIEW-MODELS

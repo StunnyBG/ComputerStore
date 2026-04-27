@@ -1,4 +1,4 @@
-namespace ComputerStore;
+namespace ComputerStore.Services.Dtos;
 
 /// <summary>One line in the in-memory shopping cart.</summary>
 public class CartItem

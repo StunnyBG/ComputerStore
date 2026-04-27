@@ -1,6 +1,7 @@
 using ComputerStore.Services.Dtos;
+using ComputerStore.Services.Interfaces;
 
-namespace ComputerStore;
+namespace ComputerStore.Services;
 
 /// <summary>
 /// Manages the in-memory shopping cart.
@@ -10,7 +11,7 @@ namespace ComputerStore;
 /// It stays in the WinForms project (not ComputerStore.Services) because
 /// it never touches the database — it is pure UI-layer state.
 /// </summary>
-public class CartService
+public class CartService : ICartService
 {
     private readonly List<CartItem> _items = new();
 

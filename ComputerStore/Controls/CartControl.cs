@@ -3,12 +3,14 @@
 // ALGORITHM: BubbleSort used to sort cart display; Queue in OrderService
 // ══════════════════════════════════════════════════════════════════════
 using ComputerStore.Infrastructure;
+using ComputerStore.Models;
+using ComputerStore.Services.Interfaces;
 
 namespace ComputerStore;
 
 public partial class CartControl : BaseControl
 {
-    private readonly CartService   _cart   = ServiceLocator.Cart;
+    private readonly ICartService _cart = ServiceLocator.Cart;
     private readonly IOrderService _orders = ServiceLocator.Orders;
 
     private int _selectedPartId = -1;

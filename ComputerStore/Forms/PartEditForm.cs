@@ -1,5 +1,6 @@
 using ComputerStore.Data.Models;
 using ComputerStore.Infrastructure;
+using ComputerStore.Services.Interfaces;
 
 namespace ComputerStore;
 
