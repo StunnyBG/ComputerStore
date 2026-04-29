@@ -3,12 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-
 namespace ComputerStore.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -139,75 +137,6 @@ namespace ComputerStore.Data.Migrations
                         principalTable: "PcParts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.InsertData(
-                table: "Categories",
-                columns: new[] { "Id", "Description", "Name" },
-                values: new object[,]
-                {
-                    { 1, "Central Processing Units", "CPU" },
-                    { 2, "Graphics Processing Units", "GPU" },
-                    { 3, "Memory modules", "RAM" },
-                    { 4, "SSDs and HDDs", "Storage" },
-                    { 5, "Mainboards", "Motherboard" },
-                    { 6, "PSUs", "Power Supply" },
-                    { 7, "PC Cases", "Case" },
-                    { 8, "CPU and case coolers", "Cooling" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Manufacturers",
-                columns: new[] { "Id", "Country", "Name", "Website" },
-                values: new object[,]
-                {
-                    { 1, "USA", "Intel", "https://www.intel.com" },
-                    { 2, "USA", "AMD", "https://www.amd.com" },
-                    { 3, "USA", "NVIDIA", "https://www.nvidia.com" },
-                    { 4, "USA", "Corsair", "https://www.corsair.com" },
-                    { 5, "Taiwan", "G.Skill", "https://www.gskill.com" },
-                    { 6, "South Korea", "Samsung", "https://www.samsung.com" },
-                    { 7, "USA", "WD", "https://www.westerndigital.com" },
-                    { 8, "USA", "Seagate", "https://www.seagate.com" },
-                    { 9, "Taiwan", "ASUS", "https://www.asus.com" },
-                    { 10, "Taiwan", "MSI", "https://www.msi.com" },
-                    { 11, "Germany", "be quiet!", "https://www.bequiet.com" },
-                    { 12, "Sweden", "Fractal Design", "https://www.fractal-design.com" },
-                    { 13, "USA", "NZXT", "https://www.nzxt.com" },
-                    { 14, "Austria", "Noctua", "https://www.noctua.at" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Users",
-                columns: new[] { "Id", "CreatedAt", "Email", "PasswordHash", "Role", "Username" },
-                values: new object[] { 1, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "admin@computerstore.bg", "YP50QG5/NT7ZefNQ8vu2ouhpCl+n0bDDKYPR2LP5X2c=", "Admin", "admin" });
-
-            migrationBuilder.InsertData(
-                table: "PcParts",
-                columns: new[] { "Id", "CategoryId", "CreatedAt", "Description", "ImagePath", "ManufacturerId", "Name", "Price", "Stock" },
-                values: new object[,]
-                {
-                    { 1, 1, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, 1, "Intel Core i9-14900K", 589.99m, 15 },
-                    { 2, 1, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, 1, "Intel Core i5-14600K", 299.99m, 30 },
-                    { 3, 1, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, 2, "AMD Ryzen 9 7950X", 549.99m, 12 },
-                    { 4, 1, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, 2, "AMD Ryzen 5 7600X", 229.99m, 40 },
-                    { 5, 2, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, 3, "NVIDIA GeForce RTX 4090", 1599.99m, 8 },
-                    { 6, 2, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, 3, "NVIDIA GeForce RTX 4070", 599.99m, 20 },
-                    { 7, 2, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, 2, "AMD Radeon RX 7900 XTX", 999.99m, 10 },
-                    { 8, 2, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, 2, "AMD Radeon RX 7600", 269.99m, 25 },
-                    { 9, 3, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, 4, "Corsair Vengeance 32GB DDR5-6000", 139.99m, 50 },
-                    { 10, 3, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, 5, "G.Skill Trident Z5 16GB DDR5-5600", 79.99m, 60 },
-                    { 11, 4, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, 6, "Samsung 990 Pro 1TB NVMe", 109.99m, 45 },
-                    { 12, 4, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, 7, "WD Black SN850X 2TB NVMe", 179.99m, 30 },
-                    { 13, 4, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, 8, "Seagate Barracuda 4TB HDD", 74.99m, 35 },
-                    { 14, 5, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, 9, "ASUS ROG Maximus Z790 Hero", 599.99m, 10 },
-                    { 15, 5, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, 10, "MSI MAG B650 TOMAHAWK WIFI", 229.99m, 22 },
-                    { 16, 6, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, 4, "Corsair RM1000x 1000W 80+ Gold", 189.99m, 20 },
-                    { 17, 6, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, 11, "be quiet! Straight Power 850W", 149.99m, 25 },
-                    { 18, 7, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, 12, "Fractal Design Torrent", 179.99m, 15 },
-                    { 19, 7, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, 13, "NZXT H510 Flow", 99.99m, 20 },
-                    { 20, 8, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, 14, "Noctua NH-D15", 99.99m, 30 },
-                    { 21, 8, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, 4, "Corsair H150i Elite LCD", 259.99m, 18 }
                 });
 
             migrationBuilder.CreateIndex(

@@ -8,7 +8,10 @@
 //
 // ══════════════════════════════════════════════════════════════════════
 using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography;
+using System.Text;
 using ComputerStore.Data.Models;
+using ComputerStore.Data.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using ComputerStore.Data.Dtos;
@@ -18,7 +21,7 @@ namespace ComputerStore.Data.Seeder
     public static class JsonSeeder
     {
         /// <summary>
-        /// Seeds Categories, Manufacturers and PcParts from JSON files
+        /// Seeds Categories, Manufacturers, PcParts and Users from JSON files
         /// found in <paramref name="seedDataPath"/>.
         /// Entries that fail validation are silently skipped.
         /// </summary>
@@ -27,6 +30,7 @@ namespace ComputerStore.Data.Seeder
             SeedCategories(ctx, seedDataPath);
             SeedManufacturers(ctx, seedDataPath);
             SeedParts(ctx, seedDataPath);
+            SeedUsers(ctx, seedDataPath);
         }
 
         // ── Categories ────────────────────────────────────────────────
@@ -159,6 +163,55 @@ namespace ComputerStore.Data.Seeder
             if (added > 0) ctx.SaveChanges();
         }
 
+        // ── Users ─────────────────────────────────────────────────────
+        private static void SeedUsers(ComputerStoreDbContext ctx, string basePath)
+        {
+            string file = Path.Combine(basePath, "users.json");
+            if (!File.Exists(file)) return;
+
+            var dtos = Deserialize<List<UserDto>>(file);   // List<UserDto>
+            if (dtos == null) return;
+
+            // HashSet<string> — O(1) duplicate check for both username and email
+            var existingUsernames = ctx.Users
+                                       .AsNoTracking()
+                                       .Select(u => u.Username)
+                                       .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var existingEmails = ctx.Users
+                                    .AsNoTracking()
+                                    .Select(u => u.Email)
+                                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            int added = 0;
+            foreach (var dto in dtos)
+            {
+                if (!IsValid(dto))                         continue;
+                if (existingUsernames.Contains(dto.Username!)) continue;   // skip duplicates
+                if (existingEmails.Contains(dto.Email!))       continue;
+
+                // Parse role string — anything unrecognised defaults to Customer
+                UserRole role = Enum.TryParse<UserRole>(dto.Role, ignoreCase: true, out var parsed)
+                    ? parsed
+                    : UserRole.Customer;
+
+                ctx.Users.Add(new User
+                {
+                    Username     = dto.Username!,
+                    Email        = dto.Email!,
+                    PasswordHash = HashPassword(dto.Password!),
+                    Role         = role,
+                    CreatedAt    = DateTime.UtcNow,
+                });
+
+                existingUsernames.Add(dto.Username!);
+                existingEmails.Add(dto.Email!);
+                added++;
+            }
+
+            if (added > 0) ctx.SaveChanges();
+        }
+
         // ── Helpers ───────────────────────────────────────────────────
 
         /// <summary>Deserialises a JSON file; returns null on any error.</summary>
@@ -185,5 +238,11 @@ namespace ComputerStore.Data.Seeder
             var results = new List<ValidationResult>();
             return Validator.TryValidateObject(dto, ctx, results, validateAllProperties: true);
         }
+
+        /// <summary>SHA-256 hash</summary>
+        private static string HashPassword(string password) =>
+            Convert.ToBase64String(
+                SHA256.HashData(
+                    Encoding.UTF8.GetBytes(password)));
     }
 }

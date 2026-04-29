@@ -1,23 +1,22 @@
 using System.ComponentModel.DataAnnotations;
 using static ComputerStore.Common.EntityConstants.Manufacturer;
 
-namespace ComputerStore.Data.Models
+namespace ComputerStore.Data.Models;
+
+public class Manufacturer
 {
-    public class Manufacturer
-    {
-        [Key]
-        public int Id { get; set; }
+    [Key]
+    public int Id { get; set; }
 
-        [Required]
-        [MaxLength(NameMaxLength)]
-        public string Name { get; set; } = string.Empty;
+    [Required]
+    [MaxLength(NameMaxLength)]
+    public string Name { get; set; } = string.Empty;
 
-        [MaxLength(CountryMaxLength)]
-        public string? Country { get; set; }
+    [MaxLength(CountryMaxLength)]
+    public string? Country { get; set; }
 
-        [MaxLength(WebsiteMaxLength)]
-        public string? Website { get; set; }
+    [MaxLength(WebsiteMaxLength)]
+    public string? Website { get; set; }
 
-        public virtual ICollection<PcPart> PcParts { get; set; } = new List<PcPart>();
-    }
+    public virtual ICollection<PcPart> PcParts { get; set; } = new List<PcPart>();
 }

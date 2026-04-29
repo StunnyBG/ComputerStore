@@ -1,0 +1,62 @@
+[
+  {
+    "username": "admin",
+    "email": "admin@computerstore.bg",
+    "password": "Admin1234",
+    "role": "Admin"
+  },
+  {
+    "username": "ivan_ivanov",
+    "email": "ivan@example.com",
+    "password": "Ivan1234",
+    "role": "Customer"
+  },
+  {
+    "username": "maria99",
+    "email": "maria@example.com",
+    "password": "Maria9999",
+    "role": "Customer"
+  },
+  {
+    "username": "petar_petrov",
+    "email": "petar@example.com",
+    "password": "Petar5678",
+    "role": "Customer"
+  },
+  {
+    "username": "storemanager",
+    "email": "manager@computerstore.bg",
+    "password": "Manager123",
+    "role": "Admin"
+  },
+  {
+    "username": "gamer_pro",
+    "email": "gamer@example.com",
+    "password": "Gamer2024",
+    "role": "Customer"
+  },
+  {
+    "username": "ab",
+    "email": "tooshort@example.com",
+    "password": "Test1234",
+    "role": "Customer"
+  },
+  {
+    "username": null,
+    "email": "noname@example.com",
+    "password": "Test1234",
+    "role": "Customer"
+  },
+  {
+    "username": "invalid_email_user",
+    "email": "not-an-email",
+    "password": "Test1234",
+    "role": "Customer"
+  },
+  {
+    "username": "short_pass",
+    "email": "shortpass@example.com",
+    "password": "123",
+    "role": "Customer"
+  }
+]
