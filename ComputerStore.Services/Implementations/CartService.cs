@@ -5,11 +5,7 @@ namespace ComputerStore.Services;
 
 /// <summary>
 /// Manages the in-memory shopping cart.
-/// Lives in Services/ because it is application state with real logic,
-/// not infrastructure plumbing like colors or session management.
-///
-/// It stays in the WinForms project (not ComputerStore.Services) because
-/// it never touches the database — it is pure UI-layer state.
+/// Pure application state — no database access.
 /// </summary>
 public class CartService : ICartService
 {
@@ -50,7 +46,7 @@ public class CartService : ICartService
 
         int newQty = _items[idx].Quantity + delta;
 
-        if (newQty < 1)      { _items.RemoveAt(idx); return true; }
+        if (newQty < 1)        { _items.RemoveAt(idx); return true; }
         if (newQty > maxStock) return false;
 
         _items[idx].Quantity = newQty;

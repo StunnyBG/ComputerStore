@@ -86,12 +86,12 @@ namespace ComputerStore
 
             lblStatus = new Label
             {
-                Text     = string.Empty,
-                Font     = new Font("Segoe UI", 9f),
+                Text      = string.Empty,
+                Font      = new Font("Segoe UI", 9f),
                 ForeColor = AppColors.TextDark,
-                AutoSize = true,
-                Anchor   = AnchorStyles.Left | AnchorStyles.Top,
-                Location = new Point(12, 15),
+                AutoSize  = true,
+                Anchor    = AnchorStyles.Left | AnchorStyles.Top,
+                Location  = new Point(12, 15),
             };
 
             // Right-side button panel — docks to the right edge so the
@@ -109,10 +109,16 @@ namespace ComputerStore
             btnDetails        = UIFactory.SecondaryButton("ℹ️ Details", 110, 34);
             btnDetails.Click += BtnDetails_Click;
 
+            // Sort toggle — switches between MergeSort (by price) and
+            // BubbleSort (by category + name).
+            btnSortPrice        = UIFactory.SecondaryButton("↕ Price", 80, 34);
+            btnSortPrice.Click += BtnSortPrice_Click;
+
             btnAddCart        = UIFactory.PrimaryButton("🛒 Add to Cart", 140, 34);
             btnAddCart.Click += BtnAddCart_Click;
 
             pnlButtonsRight.Controls.Add(btnDetails);
+            pnlButtonsRight.Controls.Add(btnSortPrice);
             pnlButtonsRight.Controls.Add(btnAddCart);
 
             pnlBottom.Controls.Add(lblStatus);
@@ -138,5 +144,6 @@ namespace ComputerStore
         private Label           lblStatus       = null!;
         private Button          btnAddCart      = null!;
         private Button          btnDetails      = null!;
+        private Button          btnSortPrice    = null!;
     }
 }

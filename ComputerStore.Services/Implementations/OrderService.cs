@@ -36,7 +36,8 @@ public class OrderService : IOrderService
         using var tx  = ctx.Database.BeginTransaction();
 
         // ── DATA STRUCTURE: Queue<OrderLineDto> ──────────────────────────
-        // REQUIREMENT: Queue is the 4th demonstrated data structure.
+        // REQUIREMENT: Queue is the 5th demonstrated data structure
+        // (List, HashSet, Dictionary in JsonSeeder; Stack in MainForm; Queue here).
         // Items are validated in one pass (without dequeuing) then inserted
         // in FIFO order via Dequeue(), ensuring consistent processing order.
         var orderQueue = new Queue<OrderLineDto>(lines);

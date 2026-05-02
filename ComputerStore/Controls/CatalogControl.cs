@@ -1,6 +1,6 @@
 // ══════════════════════════════════════════════════════════════════════
 // OOP:       CatalogControl → BaseControl → UserControl (3-level chain)
-// ALGORITHMS: BinarySearch, SequentialSearchAll, BubbleSort
+// ALGORITHMS: BinarySearch, SequentialSearchAll, BubbleSort, MergeSort
 // DATA:      List<PcPart> from PartService; cart state in CartService
 // ══════════════════════════════════════════════════════════════════════
 using ComputerStore.Data.Models;
@@ -18,6 +18,7 @@ public partial class CatalogControl : BaseControl
     private int    _selectedPartId  = -1;
     private string _lastSearch      = string.Empty;
     private int?   _lastCategoryId  = null;
+    private bool   _sortByPrice     = false;
 
     public CatalogControl()
     {
@@ -90,15 +91,25 @@ public partial class CatalogControl : BaseControl
                 parts = allParts;
             }
 
-            // ALGORITHM 3: Bubble Sort — by Category then Name
-            Algorithms.BubbleSort(parts, (a, b) =>
+            if (_sortByPrice)
             {
-                int cmp = string.Compare(
-                    a.Category.Name, b.Category.Name, StringComparison.OrdinalIgnoreCase);
-                return cmp != 0
-                    ? cmp
-                    : string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase);
-            });
+                // ALGORITHM 4: Merge Sort — O(n log n), uses recursion
+                // Produces a new sorted list (ascending price) without
+                // modifying the original collection.
+                parts = Algorithms.MergeSort(parts, (a, b) => a.Price.CompareTo(b.Price));
+            }
+            else
+            {
+                // ALGORITHM 3: Bubble Sort — by Category then Name
+                Algorithms.BubbleSort(parts, (a, b) =>
+                {
+                    int cmp = string.Compare(
+                        a.Category.Name, b.Category.Name, StringComparison.OrdinalIgnoreCase);
+                    return cmp != 0
+                        ? cmp
+                        : string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase);
+                });
+            }
 
             // Bind typed PartRow — no dynamic in SelectionChanged
             grid.DataSource = parts.Select(p =>
@@ -138,6 +149,13 @@ public partial class CatalogControl : BaseControl
         txtSearch.Clear();
         cmbCategory.SelectedIndex = 0;
         LoadParts();
+    }
+
+    private void BtnSortPrice_Click(object sender, EventArgs e)
+    {
+        _sortByPrice = !_sortByPrice;
+        btnSortPrice.Text = _sortByPrice ? "↑ Price" : "↕ Price";
+        LoadParts(_lastSearch, _lastCategoryId);
     }
 
     private void BtnAddCart_Click(object sender, EventArgs e)
