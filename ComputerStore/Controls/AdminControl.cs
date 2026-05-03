@@ -15,10 +15,9 @@ public partial class AdminControl : BaseControl
 
     public AdminControl()
     {
-        // Guard without throwing — the button is already hidden for non-admins.
-        if (!Session.IsAdmin) return;
         InitializeComponent();
-        LoadData();
+        if (Session.IsAdmin) 
+            LoadData();
     }
 
     // ── OOP: ABSTRACTION ─────────────────────────────────────────────
